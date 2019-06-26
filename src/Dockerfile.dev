@@ -1,0 +1,67 @@
+# This builds a DL *development* docker image with TF-GPU, Keras, Jupyter 
+# It's assumed that a host volume will be mapped to /mnt/
+
+# Start from tensorflow official image for gpu with python 3 as base
+FROM tensorflow/tensorflow:1.13.1-gpu-py3
+
+# Note that the TF 13.1 version only supports python 3.5 and ubuntu 16.04
+
+# Install necessary *nix tools and pip3
+RUN apt-get update && \
+    apt-get install -y vim && \
+    apt-get install -y git-core && \
+    apt-get install -y python3-pip && \
+    apt-get install -y python3-matplotlib && \
+    apt-get install -y python3-pil && \
+    apt-get install -y libsndfile1 && \
+    apt-get install -y ffmpeg && \
+    apt-get install -y wget && \
+    apt-get install -y unzip
+
+# Update pip
+RUN pip install --upgrade pip
+RUN pip install --upgrade setuptools
+
+# Install jupyter notebook
+RUN pip3 install jupyter -U && \
+    pip3 install jupyterlab
+
+# Clone the repo
+RUN git clone https://github.com/paloukari/NIH-Chest-X-rays-Classification
+
+# Install all dependency libs for the project.
+RUN pip3 install -r NIH-Chest-X-rays-Classification/src/requirements.pip
+
+# Download the data
+RUN pip install kaggle
+
+ARG KAGGLE_USERNAME
+ARG KAGGLE_KEY
+
+RUN export KAGGLE_USERNAME=${KAGGLE_USERNAME}
+RUN export KAGGLE_KEY=${KAGGLE_KEY}
+
+RUN kaggle datasets download -d nih-chest-xrays/data
+RUN unzip data.zip
+
+# Install and configure the SSH Server
+
+RUN apt-get update && apt-get install -y openssh-server
+RUN systemctl enable ssh
+RUN sed -i 's/PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/sshd_config
+
+COPY ./keys/spyros_id_rsa.pub /tmp/tmp.pub
+RUN mkdir -p ~/.ssh && chmod 700 ~/.ssh && cat /tmp/tmp.pub >> ~/.ssh/authorized_keys && chmod 600 ~/.ssh/authorized_keys && rm -f /tmp/tmp.pub
+
+RUN service ssh restart
+
+#Expose ports for jupyter lab and mlflow tracking
+EXPOSE 8888
+EXPOSE 4040
+EXPOSE 6006
+EXPOSE 22
+
+ENTRYPOINT ["bash"]
+
+# Just keeping this as a command to run if jupyter needs to be invoked by default at the start of the container
+#ENTRYPOINT ["jupyter", "lab","--ip=0.0.0.0","--allow-root"]
