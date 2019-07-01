@@ -1,0 +1,5 @@
+DATA_FOLDER = '/src/data'
+INDICES_FILE = 'Data_Entry_2017.csv'
+
+MIN_CASES = 1000
+IMG_SIZE = (128, 128)
