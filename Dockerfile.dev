@@ -26,23 +26,10 @@ RUN pip install --upgrade setuptools
 RUN pip3 install jupyter -U && \
     pip3 install jupyterlab
 
-# Clone the repo
-RUN git clone https://github.com/paloukari/NIH-Chest-X-rays-Classification
-
 # Install all dependency libs for the project.
-RUN pip3 install -r NIH-Chest-X-rays-Classification/src/requirements.pip
 
-# Download the data
-RUN pip install kaggle
-
-ARG KAGGLE_USERNAME
-ARG KAGGLE_KEY
-
-RUN export KAGGLE_USERNAME=${KAGGLE_USERNAME}
-RUN export KAGGLE_KEY=${KAGGLE_KEY}
-
-RUN kaggle datasets download -d nih-chest-xrays/data
-RUN unzip data.zip
+COPY requirements.pip /
+RUN pip3 install -r ./requirements.pip
 
 # Install and configure the SSH Server
 
