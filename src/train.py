@@ -1,9 +1,12 @@
 # -*- coding: future_fstrings -*-
 
+from keras import applications
 from keras.preprocessing.image import ImageDataGenerator
 from keras.applications.mobilenet import MobileNet
-from keras.layers import GlobalAveragePooling2D, Dense, Dropout, Flatten
-from keras.models import Sequential
+from keras.layers import Flatten, Dense, Input, Conv2D, MaxPooling2D, \
+    GlobalAveragePooling2D, GlobalMaxPooling2D, \
+    Dropout
+from keras.models import Sequential, Model
 from keras import optimizers, callbacks, regularizers
 from keras.callbacks import ModelCheckpoint, LearningRateScheduler, EarlyStopping, ReduceLROnPlateau
 
@@ -53,6 +56,28 @@ def create_data_generator(dataset,
                                                             batch_size=batch_size)
 
     return dataset_generator
+
+
+def create_VGG_model(labels, input_shape):
+    '''
+    '''
+    model = applications.VGG19(weights="imagenet",
+                               include_top=False,
+                               input_shape=input_shape)
+
+    model = MaxPooling2D((2, 2), strides=(
+        2, 2), padding='same', name='pool4')(model)
+    model = Flatten(name='flatten_')(model)
+    model = Dense(4096, activation='relu', name='vgg_fc1/fc1_1')(model)
+    model = Dense(4096, activation='relu', name='vgg_fc1/fc1_2')(model)
+    model = Dense(labels, activation='relu', name='vgg_fc2')(model)
+    predictions = Dense(16, activation="softmax")(model)
+
+    # creating the final model
+    model = Model(input=model.input, output=predictions)
+    print(f'{model.summary()}')
+
+    return model
 
 
 def create_simple_model(labels, input_shape):
@@ -113,13 +138,14 @@ def fit_model(model, train, valid):
                           patience=5)
     callbacks_list = [checkpoint, early]
 
-    # TODO: replace the next() with the proper Keras param
-    valid_X, valid_Y = next(valid)
     model.fit_generator(train,
-                        validation_data=(valid_X, valid_Y),
-                        steps_per_epoch=1000,
-                        epochs=1,
-                        callbacks=callbacks_list)
+                        validation_data=valid,
+                        validation_steps=valid.samples//valid.batch_size,
+                        steps_per_epoch=params.STEPS_PER_EPOCH,
+                        epochs=params.EPOCHS,
+                        callbacks=callbacks_list,
+                        use_multiprocessing=True,
+                        workers=params.WORKERS)
 
 
 def train():
@@ -131,12 +157,15 @@ def train():
     metadata, labels = data_preparation.preprocess_metadata(metadata)
     train, valid = data_preparation.stratify_train_test_split(metadata)
 
-    train_generator = create_data_generator(train, labels, 32)
-    validation_generator = create_data_generator(valid, labels, 1024)
+    train_generator = create_data_generator(train, labels, params.BATCH_SIZE)
+    validation_generator = create_data_generator(
+        valid, labels, params.BATCH_SIZE)
 
-    sample_X, sample_Y = next(create_data_generator(train, labels, 32))
+    sample_X, sample_Y = next(create_data_generator(
+        train, labels, params.BATCH_SIZE))
 
     model = create_simple_model(labels, sample_X.shape[1:])
+    #model = create_VGG_model(labels, sample_X.shape[1:])
 
     fit_model(model, train_generator, validation_generator)
 
