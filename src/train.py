@@ -1,7 +1,8 @@
 # -*- coding: future_fstrings -*-
 
-import numpy as np
-from keras import applications
+import os
+from time import time
+
 from keras.preprocessing.image import ImageDataGenerator
 from keras.applications.mobilenet import MobileNet
 from keras.applications.vgg19 import VGG19, preprocess_input
@@ -10,10 +11,11 @@ from keras.layers import Flatten, Dense, Input, Conv2D, MaxPooling2D, \
     Dropout, GlobalAveragePooling2D, multiply, LocallyConnected2D, \
     BatchNormalization
 from keras.models import Sequential, Model
-from keras import optimizers, callbacks, regularizers
-from keras.callbacks import ModelCheckpoint, LearningRateScheduler, EarlyStopping, ReduceLROnPlateau
+from keras.callbacks import TensorBoard, ModelCheckpoint, \
+    LearningRateScheduler, EarlyStopping, ReduceLROnPlateau
 from keras.optimizers import Adam
 
+import numpy as np
 
 import data_preparation
 import params
@@ -124,7 +126,6 @@ def _create_attention_model(frozen_model, labels):
     attention_model.compile(optimizer='adam', loss='binary_crossentropy',
                             metrics=['binary_accuracy'])
 
-
     return attention_model
 
 
@@ -140,7 +141,7 @@ def _create_VGG19_model(labels, input_shape):
       The created Model.
 
     '''
-    frozen_model = applications.VGG19(weights="imagenet",
+    frozen_model = VGG19(weights="imagenet",
                                       include_top=False,
                                       input_shape=input_shape)
     frozen_model.trainable = False
@@ -235,7 +236,10 @@ def fit_model(model, train, valid):
     early = EarlyStopping(monitor="val_loss",
                           mode="min",
                           patience=5)
-    callbacks_list = [checkpoint, early]
+
+    tensorboard = TensorBoard(log_dir=params.RESULTS_FOLDER)
+
+    callbacks_list = [tensorboard, checkpoint, early]
 
     model.fit_generator(train,
                         validation_data=valid,
@@ -258,7 +262,7 @@ def train():
 
     train_generator = create_data_generator(train, labels, params.BATCH_SIZE)
     validation_generator = create_data_generator(
-        valid, labels, 8*params.BATCH_SIZE)
+        valid, labels, params.VALIDATION_BATCH_SIZE)
 
     sample_X, sample_Y = next(create_data_generator(
         train, labels, params.BATCH_SIZE))
