@@ -40,6 +40,9 @@ RUN sed -i 's/PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/s
 COPY ./keys/spyros_id_rsa.pub /tmp/tmp.pub
 RUN mkdir -p ~/.ssh && chmod 700 ~/.ssh && cat /tmp/tmp.pub >> ~/.ssh/authorized_keys && chmod 600 ~/.ssh/authorized_keys && rm -f /tmp/tmp.pub
 
+COPY ./keys/biseda_id_rsa.pub /tmp/tmp.pub
+RUN mkdir -p ~/.ssh && chmod 700 ~/.ssh && cat /tmp/tmp.pub >> ~/.ssh/authorized_keys && chmod 600 ~/.ssh/authorized_keys && rm -f /tmp/tmp.pub
+
 RUN service ssh restart
 
 #Expose ports for jupyter lab and mlflow tracking
