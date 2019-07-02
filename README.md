@@ -47,8 +47,9 @@ SSH on this host to setup the container.
 ssh -i ~/.ssh/id_rsa {SERVER_IP}
 ```
 
-
 >Note:You'll need to check-in your public SSH key in the keys folder and modify the last layer of the dockerfile to get access to the container from VsCode
+
+Need to Add 2 TB secondary Hard-drive to Device via softlayer device list portal.
 
 ## 2. Clone the project repo
 
