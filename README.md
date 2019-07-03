@@ -6,12 +6,12 @@ This UC Berkeley Master of Information in Data Science W207 final project was de
 # Table of Contents
 
  - [Project Overview](#Project-Overview) 
-   - [Optimizer Selection](#Optimizer-Selection)
-   - [Batch Size and Learning Rate](#Batch-Size-and-Learning-Rate)
-   - [Initial Results](#Initial-Results)
  - [Background](#Background)
  - [Data Preparation](#Data-Preparation)
  - [Results](#Results)
+    - [Optimizer Selection](#Optimizer-Selection)
+    - [Batch Size and Learning Rate](#Batch-Size-and-Learning-Rate)
+    - [Initial Results](#Initial-Results)
  - [Installation](#Installation)
  - [References](#References)
 
