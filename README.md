@@ -12,6 +12,7 @@ This UC Berkeley Master of Information in Data Science W207 final project was de
     - [Optimizer Selection](#Optimizer-Selection)
     - [Batch Size and Learning Rate](#Batch-Size-and-Learning-Rate)
     - [Initial Results](#Initial-Results)
+ - [Conclusion](#Conclusion)
  - [Installation](#Installation)
  - [References](#References)
 
@@ -74,6 +75,10 @@ The table below shows batch size accumulation steps (32 x n) vs learning rate. W
 ![Initial Results](results/barely_trained_net.png)
 
 ![High Confidence Diagnoses](results/high_confidence_diagnoses.png)
+
+# Conclusion
+
+We were ultimately able to achieve binary classification performance of XX%.
 
 # Installation
 
