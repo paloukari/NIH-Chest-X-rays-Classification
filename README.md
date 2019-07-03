@@ -3,10 +3,25 @@
 This UC Berkeley Master of Information in Data Science W207 final project was developed by
 [Spyros Garyfallos](mailto:spiros.garifallos@berkeley.edu ), [Brent Biseda](mailto:brentbiseda@ischool.berkeley.edu), and [Mumin Khan](mailto:mumin@ischool.berkeley.edu).
 
-[Project Overview](#Project-Overview) 
-[Installation](#Installation)
+[Project Overview](#Project-Overview)  
+[Results](#Results)
+[Installation](#Installation)  
 
 # Project Overview
+
+This project is makes use of [ChestX-ray8: Hospital-scale Chest X-ray Database and Benchmarks on Weakly-Supervised Classification and Localization of Common Thorax Diseases](docs/Wang_ChestX-ray8_Hospital-Scale_Chest_CVPR_2017_paper.pdf)
+
+![Correlation of Diagnoses](results/paper correlation of diagnoses.png)
+
+![Architecture Comparison](results/nn architecture comparisons.png)
+
+![Architecture Results Table](results/table of architecture results.png)
+
+# Results
+
+![Optimizer Selection](results/optimizer_selection_original.png)
+
+![Initial Results](results/barely_trained_net.png)
 
 # Installation
 
