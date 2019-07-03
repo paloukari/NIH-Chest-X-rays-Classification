@@ -3,9 +3,10 @@
 This UC Berkeley Master of Information in Data Science W207 final project was developed by
 [Spyros Garyfallos](mailto:spiros.garifallos@berkeley.edu ), [Brent Biseda](mailto:brentbiseda@ischool.berkeley.edu), and [Mumin Khan](mailto:mumin@ischool.berkeley.edu).
 
+[Overview](#Project Overview)
 [Installation](#Installation)
 
-## 1. Provision a cloud GPU machine
+##1. Provision a cloud GPU machine
 
 ### Using AWS
 
