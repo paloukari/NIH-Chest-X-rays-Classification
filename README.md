@@ -12,7 +12,7 @@ This UC Berkeley Master of Information in Data Science W207 final project was de
 
 This project is makes use of [ChestX-ray8: Hospital-scale Chest X-ray Database and Benchmarks on Weakly-Supervised Classification and Localization of Common Thorax Diseases](docs/Wang_ChestX-ray8_Hospital-Scale_Chest_CVPR_2017_paper.pdf)
 
-![Roadmap](results/W207_Project_Roadmap.png)
+![Roadmap](docs/W207_Project_Roadmap.png)
 
 # Background
 
