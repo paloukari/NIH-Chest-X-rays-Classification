@@ -13,9 +13,9 @@ This project is makes use of [ChestX-ray8: Hospital-scale Chest X-ray Database a
 
 ![Correlation of Diagnoses](results/paper%20correlation%20of%20diagnoses.png)
 
-![Architecture Comparison](results/nn architecture comparisons.png)
+![Architecture Comparison](results/nn%20architecture%20comparisons.png)
 
-![Architecture Results Table](results/table of architecture results.png)
+![Architecture Results Table](results/table%20of%20architecture%20results.png)
 
 # Results
 
