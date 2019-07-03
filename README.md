@@ -3,30 +3,77 @@
 This UC Berkeley Master of Information in Data Science W207 final project was developed by
 [Spyros Garyfallos](mailto:spiros.garifallos@berkeley.edu ), [Brent Biseda](mailto:brentbiseda@ischool.berkeley.edu), and [Mumin Khan](mailto:mumin@ischool.berkeley.edu).
 
-[Project Overview](#Project-Overview)  
+# Table of Contents
+
+[Project Overview](#Project-Overview) 
+  - [Optimizer Selection](#Optimizer-Selection)
+  - [Batch Size and Learning Rate](#Batch-Size-and-Learning-Rate)
+  - [Initial Results](#Initial-Results)
 [Background](#Background)
+[Data Preparation](#Data-Preparation)
 [Results](#Results)
-[Installation](#Installation)  
+[Installation](#Installation)
+[References](#References)
 
 # Project Overview
 
+This project is based on the workflow as laid out by Chahhou Mohammed, winner of the Kaggle $1 Million prize for price prediction on the Zillow dataset. He systematically builds a simple model and gradually adds more complexity while performing grid-search over the hyperparameters. Here we will perform this same task on the Kaggle dataset for NIH Chest X-ray images.
+
+A link to Mohammed's workflow may be found here: https://github.com/MIDS-scaling-up/v2/blob/master/week07/labs/README.md
+
 This project is makes use of [ChestX-ray8: Hospital-scale Chest X-ray Database and Benchmarks on Weakly-Supervised Classification and Localization of Common Thorax Diseases](docs/Wang_ChestX-ray8_Hospital-Scale_Chest_CVPR_2017_paper.pdf)
+
+This dataset was gathered by the NIH and contains over 100,000 anonymized chest x-ray images from more than 30,000 patients. The data represents NLP analysis of radiology reports and may include areas of lower confidence in diagnoses. As a simplifying assumption, wee assume that based on the size of the dataset, that the dataset is accurate in diagnoses.
+
+
+
+One of the difficulties of this problem involves the lack of a "diagnosis confidence" attribute in the data.  In addition to a chest X-ray, diagnosis involves patient presentation and history.  Further, some physician's diagnoses will not be agreed upon by others.  Therefore, it is likely that some of the images are mislabeled.
 
 ![Roadmap](docs/W207_Project_Roadmap.png)
 
 # Background
 
+The image set involves diagnoses that were scraped from radiology reports and is a multi-label classification problem.  The diagram below shows the proportion of images with multi-labels in each of the 8 pathology classes and the labels' co-occurrence statistics.
+
 ![Correlation of Diagnoses](results/paper%20correlation%20of%20diagnoses.png)
+
+Comparison of multi-label classification performance with different model architectures.
 
 ![Architecture Comparison](results/nn%20architecture%20comparisons.png)
 
+Tabulated multi-label classification performance with best results highlighted.
+
 ![Architecture Results Table](results/table%20of%20architecture%20results.png)
+
+# Data Preparation
+
+![All Diagnoses](results/all_diagnoses.png)
+
+![Clean Categories](results/clean_categories.png)
+
+![Adjusted Frequencies](results/adjusted_frequencies.png)
 
 # Results
 
+## Optimizer Selection
+
+While it appears that Adagrad, and adadelt may reach convergence faster, there is no substantially different loss as a result of optimizer selection. When this function was run with larger numbers of training examples per epoch, adam outperformed (graphic not shown). Based on the results shown in the figure above, we can accept the use of adam based on this particular dataset.
+
 ![Optimizer Selection](results/optimizer_selection_original.png)
 
+## Batch Size and Learning Rate
+
+The table below shows batch size accumulation steps (32 x n) vs learning rate. We can see that our model achieves better loss for learning rates around 0.0005 and with a gradient accumulation step size of 8 or batch size of 256. We observed similar performance for batches both smaller and larger, so we can be confident that batch sizes of 1024, or 2048 would not yield substantially improved performance.  Going forward we can use the ADAM optimizer along with a batch size of 256 using gardient accumulation.
+
+![Initial Results](results/gradient_accumulation_and_learning_rate.png)
+
+## Initial Results
+
+![Simple Model Keras](results/simple_model_keras.png)
+
 ![Initial Results](results/barely_trained_net.png)
+
+![High Confidence Diagnoses](results/high_confidence_diagnoses.png)
 
 # Installation
 
@@ -232,3 +279,11 @@ TBD
 ### Testing
 
 TBD
+
+# References
+
+ - Wang X, Peng Y, Lu L, Lu Z, Bagheri M, Summers RM. ChestX-ray8: Hospital-scale Chest X-ray Database and Benchmarks on Weakly-Supervised Classification and Localization of Common Thorax Diseases. IEEE CVPR 2017, ChestX-ray8_Hospital-Scale_Chest_CVPR_2017_paper.pdf
+
+ - NIH News release: NIH Clinical Center provides one of the largest publicly available chest x-ray datasets to scientific community.  Original source files and documents: https://nihcc.app.box.com/v/ChestXray-NIHCC/folder/36938765345
+
+ - https://www.kaggle.com/nih-chest-xrays/data
