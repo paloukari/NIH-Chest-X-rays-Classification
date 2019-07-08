@@ -86,6 +86,12 @@ The table below shows batch size accumulation steps (32 x n) vs learning rate. W
 
 ## Image Size
 
+![Image Size Choice](results/image_size_choice.png)
+
+![Image Size Table](results/image_size_table.png)
+
+The above table shows image size resolution. Mobile net was designed for 224 x 224. VGG19 was also designed with a native resolution of 224 x 224. However, inceptionV3 resnet was designed with a resolution of 299 x 299. We would expect no improvement in performance beyond the initial design of the network. However, we do in fact see some improvement with images of size 512 x 512. Therefore, we will go forward with a resolution of 512 x 512, knowing with confidence that we should get results at least as good as using the native resolution of the various models (299 x 299)
+
 ## Initial Results
 
 Below we can see the initial simple model created in Keras.  We make use of the mobilenet and add dense layers with a final sigmoid activation for classification prediction.
