@@ -190,6 +190,10 @@ def _create_MobileNet_model(labels, input_shape, trainable=False, weights="image
       The created Model.
 
     '''
+    if input_shape[0] != 224: 
+      weights = None
+      print("Cannot initialize with imagenet weights for input_shape:", input_shape, ", reverting to random initialization.")
+
     frozen_model = MobileNet(weights=weights,
                                      include_top=False,
                                      input_shape=input_shape)
@@ -261,9 +265,6 @@ def fit_model(model, train, valid):
       model: The model to train
       train: The training data generator
       valid: The validation data generator
-
-    Returns:
-      The created Model.
     '''
 
     weight_path = params.WEIGHT_PATH
@@ -292,6 +293,44 @@ def fit_model(model, train, valid):
                         use_multiprocessing=True,
                         workers=params.WORKERS)
 
+                        
+def fit_models(modelList, train, valid):
+    '''
+    Fits a List of Models. Best weights are stored with subscript of index of list of models.
+
+    Args:
+      modelList: A list of the models to train
+      train: The training data generator
+      valid: The validation data generator
+    '''
+    
+    early = EarlyStopping(monitor="val_loss",
+                          mode="min",
+                          patience=params.EARLY_STOPPING)
+
+    tensorboard = TensorBoard(log_dir=params.RESULTS_FOLDER)
+
+    for i, model in enumerate(modelList):
+      weight_path = str(i) + "_" + params.WEIGHT_PATH
+      
+      checkpoint = ModelCheckpoint(weight_path,
+                                 monitor='val_loss',
+                                 verbose=1,
+                                 save_best_only=True,
+                                 mode='min',
+                                 save_weights_only=True)
+      
+      callbacks_list = [tensorboard, checkpoint, early]
+
+      model.fit_generator(train,
+                          validation_data=valid,
+                          validation_steps=valid.samples//valid.batch_size,
+                          steps_per_epoch=params.STEPS_PER_EPOCH,
+                          epochs=params.EPOCHS,
+                          callbacks=callbacks_list,
+                          use_multiprocessing=True,
+                          workers=params.WORKERS)
+
 
 def train():
     '''
@@ -309,37 +348,61 @@ def train():
     sample_X, sample_Y = next(create_data_generator(
         train, labels, params.BATCH_SIZE))
 
-    adamAccumulate = gradient_accumulation.AdamAccumulate(lr=params.LEARNING_RATE, accum_iters=params.ACCUMULATION_STEPS) #Create Custom Optimizer to use larger synthetic batches
+    adamAccumulate = gradient_accumulation.AdamAccumulate(lr=params.LEARNING_RATE, accum_iters=params.ACCUMULATION_STEPS)
     
     '''
     Pretrained Models from Helper Methods
     '''
-    #baseModel = _create_MobileNet_model(labels, sample_X.shape[1:], trainable=False, weights="imagenet") # pre-trained requires 224 x 224 input for mobilenet
-    baseModel = _create_InceptionResNetV2_model(labels, sample_X.shape[1:], trainable=False, weights="imagenet")
-    #baseModel = _create_VGG19_model(labels, sample_X.shape[1:], trainable=False, weights="imagenet")
+    baseMobileNet = _create_MobileNet_model(labels, sample_X.shape[1:], trainable=False, weights="imagenet")
     
     '''
     Add Simple Layers to Pretrained Models
     '''
-    model = create_simple_model(baseModel, labels, optimizer=adamAccumulate) #Add some layers
-
-    '''
-    Add Attention Layers to Pretrained Models
-    '''
-    #model = create_attention_model(baseModel, labels, optimizer=adamAccumulate)
-    
-    '''
-    Fine Tuning the Model from the Pre-trained Weight Path now with Unfrozen Layers
-    '''
-    #baseModel = _create_InceptionResNetV2_model(labels, sample_X.shape[1:], trainable=True, weights="imagenet")
-    #model = create_attention_model(baseModel, labels, optimizer=adamAccumulate)
-    #model.load_weights(params.WEIGHT_PATH)
+    AttentionModel = create_attention_model(baseMobileNet, labels, optimizer=adamAccumulate)
     
     '''
     Train the Model
     '''
-    fit_model(model, train_generator, validation_generator)
+    fit_model(AttentionModel, train_generator, validation_generator)
+
+def train_simple_multi():
+    '''
+    Trains list of CNNs.
+    '''
+
+    metadata = data_preparation.load_metadata()
+    metadata, labels = data_preparation.preprocess_metadata(metadata)
+    train, valid = data_preparation.stratify_train_test_split(metadata)
+
+    train_generator = create_data_generator(train, labels, params.BATCH_SIZE)
+    validation_generator = create_data_generator(
+        valid, labels, params.VALIDATION_BATCH_SIZE)
+
+    sample_X, sample_Y = next(create_data_generator(
+        train, labels, params.BATCH_SIZE))
+
+    adamAccumulate = gradient_accumulation.AdamAccumulate(lr=params.LEARNING_RATE, accum_iters=params.ACCUMULATION_STEPS)
+    
+    '''
+    Pretrained Models from Helper Methods
+    '''
+    baseMobileNet = _create_MobileNet_model(labels, sample_X.shape[1:], trainable=False, weights="imagenet")
+    baseResNet = _create_InceptionResNetV2_model(labels, sample_X.shape[1:], trainable=False, weights="imagenet")
+    baseVGG19 = _create_VGG19_model(labels, sample_X.shape[1:], trainable=False, weights="imagenet")
+    
+    '''
+    Add Simple Layers to Pretrained Models
+    '''
+    simpleMobileNet = create_simple_model(baseMobileNet, labels, optimizer=adamAccumulate)
+    simpleResNet = create_simple_model(baseResNet, labels, optimizer=adamAccumulate)
+    simpleVGG19 = create_simple_model(baseVGG19, labels, optimizer=adamAccumulate)
+    
+    '''
+    Train the Models
+    '''
+    models = [simpleMobileNet, simpleResNet, simpleVGG19]
+    fit_models(models, train_generator, validation_generator)
 
 if __name__ == '__main__':
-    reset.reset_keras() #Garbage Collection
-    train()
+    reset.reset_keras()
+    train_simple_multi()

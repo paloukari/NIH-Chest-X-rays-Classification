@@ -6,15 +6,13 @@ import gc
 
 # Reset Keras Session
 def reset_keras():
+    '''
+    Perform garbage collection and manually release memory used by Keras.
+    '''
     sess = get_session()
-    clear_session()
-    sess.close()
-    sess = get_session()
-
-    try:
-        del classifier # this is from global space - change this as you need
-    except:
-        pass
+    if sess is not None:
+        clear_session()
+        sess.close()
 
     print(gc.collect()) # if it's done something you should see a number being outputted
 

@@ -5,7 +5,13 @@ from keras.legacy import interfaces
 from keras.optimizers import Optimizer
 
 class AdamAccumulate(Optimizer):
+    '''
+    Adam Optimizer with gradient accumulation.  Perform accum_iters number of batches prior to performing each gradient descent step.
+    This allows for synthetic batch sizes larger than can be stored in GPU memory.  Otherwise functions as Adam optimizer.
 
+    Args:
+      accum_iters: Number of batches to run before performing gradient descent step
+    '''
     def __init__(self, lr=0.005, beta_1=0.9, beta_2=0.999,
                  epsilon=None, decay=0., amsgrad=False, accum_iters=1, **kwargs):
         if accum_iters < 1:
