@@ -3,9 +3,11 @@
 import os
 from time import time
 
+from keras import backend as K
 from keras.preprocessing.image import ImageDataGenerator
 from keras.applications.mobilenet import MobileNet
 from keras.applications.vgg19 import VGG19, preprocess_input
+from keras.applications.inception_resnet_v2 import InceptionResNetV2, preprocess_input
 from keras.layers import Flatten, Dense, Input, Conv2D, MaxPooling2D, \
     GlobalAveragePooling2D, GlobalMaxPooling2D, AvgPool2D, Lambda, \
     Dropout, GlobalAveragePooling2D, multiply, LocallyConnected2D, \
@@ -19,7 +21,8 @@ import numpy as np
 
 import data_preparation
 import params
-
+import reset
+import gradient_accumulation
 
 def create_data_generator(dataset,
                           labels,
@@ -69,18 +72,19 @@ def create_data_generator(dataset,
     return dataset_generator
 
 
-def _create_attention_model(frozen_model, labels):
+def _create_attention_model(frozen_model, labels, optimizer='adam'):
     '''
-      Creates an attention model to train on the frozen VGG19 
+      Creates an attention model to train on a pre-trained model
       output features
 
       Args:
         frozen_model: The VGG19 frozen network
         labels: The labels to use
+        optimizer: The optimizer to use
 
       Returns:
         The created Model.
-      '''
+    '''
 
     frozen_features = Input(frozen_model.get_output_shape_at(0)[
         1:], name='feature_input')
@@ -123,93 +127,131 @@ def _create_attention_model(frozen_model, labels):
     attention_model = Model(inputs=[frozen_features], outputs=[
         out_layer], name='attention_model')
 
-    attention_model.compile(optimizer='adam', loss='binary_crossentropy',
+    attention_model.compile(optimizer=optimizer, loss='binary_crossentropy',
                             metrics=['binary_accuracy'])
 
     return attention_model
 
 
-def _create_VGG19_model(labels, input_shape):
+def _create_VGG19_model(labels, input_shape, trainable=False, weights="imagenet"):
     '''
     Creates a VGG19 based model for transfer learning
 
     Args:
       labels: The labels to use
       input_shape: The shape of the Network input
+      trainable: Is the model be able to be trained
+      weights: Which pre-trained weights to use if any
 
     Returns:
       The created Model.
 
     '''
-    frozen_model = VGG19(weights="imagenet",
+    frozen_model = VGG19(weights=weights,
                                       include_top=False,
                                       input_shape=input_shape)
-    frozen_model.trainable = False
+    frozen_model.trainable = trainable
+
+    return frozen_model
+
+def _create_InceptionResNetV2_model(labels, input_shape, trainable=False, weights="imagenet"):
+    '''
+    Creates a InceptionResNetV2 based model for transfer learning
+
+    Args:
+      labels: The labels to use
+      input_shape: The shape of the Network input
+      trainable: Is the model be able to be trained
+      weights: Which pre-trained weights to use if any
+
+    Returns:
+      The created Model.
+
+    '''
+    frozen_model = InceptionResNetV2(weights=weights,
+                                      include_top=False,
+                                      input_shape=input_shape)
+    frozen_model.trainable = trainable
 
     return frozen_model
 
 
-def create_VGG19_attention_model(labels, input_shape):
+def _create_MobileNet_model(labels, input_shape, trainable=False, weights="imagenet"):
     '''
-    Creates a VGG19 attention model for transfer learning
+    Creates a MobileNet based model for transfer learning
 
     Args:
       labels: The labels to use
       input_shape: The shape of the Network input
+      trainable: Is the model be able to be trained
+      weights: Which pre-trained weights to use if any
 
     Returns:
       The created Model.
 
     '''
-
-    frozen_model = _create_VGG19_model(labels, input_shape)
-
-    print(f'{frozen_model.summary()}')
-
-    attention_model = _create_attention_model(frozen_model, labels)
-    print(f'{attention_model.summary()}')
-
-    model = Sequential(name='combined_model')
-    model.add(frozen_model)
-    model.add(attention_model)
-    model.compile(optimizer=Adam(lr=1e-3), loss='binary_crossentropy',
-                  metrics=['binary_accuracy'])
-
-    print(f'{model.summary()}')
-
-    return model
-
-
-def create_simple_model(labels, input_shape):
-    '''
-    Creates a simple model based on MobileNet
-
-
-    Args:
-      labels: The labels to use
-      input_shape: The shape of the Network input
-
-    Returns:
-      The created Model.
-
-    '''
-
-    base_mobilenet_model = MobileNet(input_shape=input_shape,
+    frozen_model = MobileNet(weights=weights,
                                      include_top=False,
-                                     weights=None)
+                                     input_shape=input_shape)
+
+    frozen_model.trainable = trainable
+
+    return frozen_model
+
+def create_simple_model(base_model, labels, optimizer='adam'):
+    '''
+    Creates a simple model by adding dropout, pooling, and dense layer to a pretrained model
+
+
+    Args:
+      base_model: The Keras base model
+      labels: The labels to use
+      optimizer: The optimizer to use
+
+    Returns:
+      The created Model.
+
+    '''
+
     model = Sequential()
-    model.add(base_mobilenet_model)
+    model.add(base_model)
     model.add(GlobalAveragePooling2D())
     model.add(Dropout(0.5))
     model.add(Dense(512))
     model.add(Dropout(0.5))
     model.add(Dense(len(labels), activation='sigmoid'))
-    model.compile(optimizer='adam',
+    model.compile(optimizer=optimizer,
                   loss='binary_crossentropy',
                   metrics=['binary_accuracy', 'mae'])
     print(f'{model.summary()}')
     return model
 
+def create_attention_model(base_model, labels, optimizer='adam'):
+    '''
+    Creates an attention model by adding attention layers to base_model
+
+
+    Args:
+      base_model: The Keras Base Model to start with
+      labels: The labels to use
+      optimizer: The optimizer to use
+
+    Returns:
+      The created attention Model.
+
+    '''
+
+    attention_model = _create_attention_model(base_model, labels, optimizer=optimizer)
+
+    model = Sequential(name='combined_model')
+    model.add(base_model)
+    model.add(attention_model)
+    model.compile(optimizer=optimizer, loss='binary_crossentropy',
+                  metrics=['binary_accuracy'])
+
+    print(f'{model.summary()}')
+
+    return model
 
 def fit_model(model, train, valid):
     '''
@@ -224,7 +266,7 @@ def fit_model(model, train, valid):
       The created Model.
     '''
 
-    weight_path = "{}_weights.best.hdf5".format('xray_class')
+    weight_path = params.WEIGHT_PATH
 
     checkpoint = ModelCheckpoint(weight_path,
                                  monitor='val_loss',
@@ -235,7 +277,7 @@ def fit_model(model, train, valid):
 
     early = EarlyStopping(monitor="val_loss",
                           mode="min",
-                          patience=5)
+                          patience=params.EARLY_STOPPING)
 
     tensorboard = TensorBoard(log_dir=params.RESULTS_FOLDER)
 
@@ -267,11 +309,37 @@ def train():
     sample_X, sample_Y = next(create_data_generator(
         train, labels, params.BATCH_SIZE))
 
-    #model = create_simple_model(labels, sample_X.shape[1:])
-    model = create_VGG19_attention_model(labels, sample_X.shape[1:])
+    adamAccumulate = gradient_accumulation.AdamAccumulate(lr=params.LEARNING_RATE, accum_iters=params.ACCUMULATION_STEPS) #Create Custom Optimizer to use larger synthetic batches
+    
+    '''
+    Pretrained Models from Helper Methods
+    '''
+    #baseModel = _create_MobileNet_model(labels, sample_X.shape[1:], trainable=False, weights="imagenet") # pre-trained requires 224 x 224 input for mobilenet
+    baseModel = _create_InceptionResNetV2_model(labels, sample_X.shape[1:], trainable=False, weights="imagenet")
+    #baseModel = _create_VGG19_model(labels, sample_X.shape[1:], trainable=False, weights="imagenet")
+    
+    '''
+    Add Simple Layers to Pretrained Models
+    '''
+    model = create_simple_model(baseModel, labels, optimizer=adamAccumulate) #Add some layers
 
+    '''
+    Add Attention Layers to Pretrained Models
+    '''
+    #model = create_attention_model(baseModel, labels, optimizer=adamAccumulate)
+    
+    '''
+    Fine Tuning the Model from the Pre-trained Weight Path now with Unfrozen Layers
+    '''
+    #baseModel = _create_InceptionResNetV2_model(labels, sample_X.shape[1:], trainable=True, weights="imagenet")
+    #model = create_attention_model(baseModel, labels, optimizer=adamAccumulate)
+    #model.load_weights(params.WEIGHT_PATH)
+    
+    '''
+    Train the Model
+    '''
     fit_model(model, train_generator, validation_generator)
 
-
 if __name__ == '__main__':
+    reset.reset_keras() #Garbage Collection
     train()
