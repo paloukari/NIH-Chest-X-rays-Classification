@@ -313,7 +313,26 @@ Once in there, open the NIH-Chest-X-rays-Classification folder, install the Pyth
 
 ### Training
 
-TBD
+The model is trained through train.py.  The configuration of the models can be changed with a number of helper functions and parameters that are set in params.py.
+
+To train a single model with mobilenet run the train() function in train.py.
+
+To visualize results using tensorboard, use the terminal:
+```
+tensorboard --logdir=/src/results/tensorboard/single_model/ --port=4040
+```
+
+To train multiple models for comparison between mobilenet, VGG, and ResNet run the train_simple_multi() function in train.py.
+
+To visualize results using tensorboard, use the terminal with paths to the models:
+```
+tensorboard --logdir=mobilenet:/src/results/tensorboard/multi/0/ resnet:/src/results/tensorboard/multi/1/ vgg:/src/results/tensorboard/multi/2/ --port=4040
+```
+
+#### Example Tensorboard Outputs
+
+![Example Tensorboard Graph](results/tensorboard_graph_example.png)
+
 
 ### Testing
 
