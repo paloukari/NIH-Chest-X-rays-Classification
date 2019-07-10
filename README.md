@@ -86,6 +86,10 @@ The table below shows batch size accumulation steps (32 x n) vs learning rate. W
 
 ## Image Size
 
+Initially we trained the model making use of greyscale images, as X-ray medical images can typically be inferred to not have significant information present in the color channels.  However, this is an assumption that we also test.  Kanan and Cottrell show that the information present in RGB channels and the algorithm used to produce greyscale can be meaningful.
+
+![Grey Scale and RGB from Journal](results/journal.pone.0029740.g001.png)
+
 ## Initial Results
 
 Below we can see the initial simple model created in Keras.  We make use of the mobilenet and add dense layers with a final sigmoid activation for classification prediction.
@@ -322,3 +326,4 @@ TBD
  - NIH News release: NIH Clinical Center provides one of the largest publicly available chest x-ray datasets to scientific community.  Original source files and documents: https://nihcc.app.box.com/v/ChestXray-NIHCC/folder/36938765345
 
  - https://www.kaggle.com/nih-chest-xrays/data
+ - Kanan C, Cottrell GW (2012) Color-to-Grayscale: Does the Method Matter in Image Recognition? PLoS ONE 7(1): e29740. https://doi.org/10.1371/journal.pone.0029740
