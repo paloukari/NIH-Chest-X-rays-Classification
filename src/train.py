@@ -280,7 +280,7 @@ def fit_model(model, train, valid):
                           mode="min",
                           patience=params.EARLY_STOPPING)
 
-    tensorboard = TensorBoard(log_dir=params.RESULTS_FOLDER)
+    tensorboard = TensorBoard(log_dir=params.TENSORBOARD_BASE_FOLDER+'/single_model')
 
     callbacks_list = [tensorboard, checkpoint, early]
 
@@ -308,8 +308,6 @@ def fit_models(modelList, train, valid):
                           mode="min",
                           patience=params.EARLY_STOPPING)
 
-    tensorboard = TensorBoard(log_dir=params.RESULTS_FOLDER)
-
     for i, model in enumerate(modelList):
       weight_path = str(i) + "_" + params.WEIGHT_PATH
       
@@ -319,6 +317,8 @@ def fit_models(modelList, train, valid):
                                  save_best_only=True,
                                  mode='min',
                                  save_weights_only=True)
+      
+      tensorboard = TensorBoard(log_dir=params.TENSORBOARD_BASE_FOLDER+'/multi/'+str(i))
       
       callbacks_list = [tensorboard, checkpoint, early]
 
@@ -405,4 +405,5 @@ def train_simple_multi():
 
 if __name__ == '__main__':
     reset.reset_keras()
+    #train()
     train_simple_multi()
