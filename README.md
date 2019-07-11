@@ -326,13 +326,14 @@ To train multiple models for comparison between mobilenet, VGG, and ResNet run t
 
 To visualize results using tensorboard, use the terminal with paths to the models:
 ```
-tensorboard --logdir=mobilenet:/src/results/tensorboard/multi/0/ resnet:/src/results/tensorboard/multi/1/ vgg:/src/results/tensorboard/multi/2/ --port=4040
+tensorboard --logdir=mobilenet:/src/results/tensorboard/multi/0/,resnet:/src/results/tensorboard/multi/1/,vgg:/src/results/tensorboard/multi/2/ --port=4040
 ```
 
 #### Example Tensorboard Outputs
 
 ![Example Tensorboard Graph](results/tensorboard_graph_example.png)
 
+![Example Multiple Comparison Tensorboard Graph](results/multi_tensorboard.png)
 
 ### Testing
 
