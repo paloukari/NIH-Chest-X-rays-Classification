@@ -280,7 +280,7 @@ def fit_model(model, train, valid):
                           mode="min",
                           patience=params.EARLY_STOPPING)
 
-    tensorboard = TensorBoard(log_dir=params.TENSORBOARD_BASE_FOLDER+'/single_model')
+    tensorboard = TensorBoard(log_dir=os.path.join(params.TENSORBOARD_BASE_FOLDER,'single_model'))
 
     callbacks_list = [tensorboard, checkpoint, early]
 
@@ -318,7 +318,7 @@ def fit_models(modelList, train, valid):
                                  mode='min',
                                  save_weights_only=True)
       
-      tensorboard = TensorBoard(log_dir=params.TENSORBOARD_BASE_FOLDER+'/multi/'+str(i))
+      tensorboard = TensorBoard(log_dir=os.path.join(params.TENSORBOARD_BASE_FOLDER,'multi/',str(i)))
       
       callbacks_list = [tensorboard, checkpoint, early]
 
