@@ -3,7 +3,7 @@ RESULTS_FOLDER = '/src/results'
 TENSORBOARD_BASE_FOLDER = '/src/results/tensorboard'
 INDICES_FILE = 'Data_Entry_2017.csv'
 
-WEIGHT_PATH = "{}_weights.best.hdf5".format('xray_class')
+WEIGHT_PATH = "{}_weights.best.hdf5"
 
 MIN_CASES = 1000
 IMG_SIZE = (299, 299)

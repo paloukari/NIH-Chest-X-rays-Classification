@@ -279,7 +279,7 @@ def fit_model(model, model_name, train, valid):
       valid: The validation data generator
     '''
 
-    weight_path = params.WEIGHT_PATH
+    weight_path = params.WEIGHT_PATH.format(model_name)
 
     checkpoint = ModelCheckpoint(weight_path,
                                  monitor='val_loss',
@@ -293,7 +293,7 @@ def fit_model(model, model_name, train, valid):
                           patience=params.EARLY_STOPPING)
 
     tensorboard = TensorBoard(log_dir=os.path.join(
-        params.TENSORBOARD_BASE_FOLDER, 'single_model'))
+        params.TENSORBOARD_BASE_FOLDER, model_name))
 
     callbacks_list = [tensorboard, checkpoint, early]
 
@@ -329,47 +329,8 @@ def fit_models(modelList, train, valid):
       train: The training data generator
       valid: The validation data generator
     '''
-
-    early = EarlyStopping(monitor="val_loss",
-                          mode="min",
-                          patience=params.EARLY_STOPPING)
-
     for [model, model_name] in enumerate(modelList):
-        tensorboard = TensorBoard(log_dir=os.path.join(
-            params.TENSORBOARD_BASE_FOLDER, 'multi', str(i)))
-
-        weight_path = model_name + "_" + params.WEIGHT_PATH
-
-        checkpoint = ModelCheckpoint(weight_path,
-                                 monitor='val_loss',
-                                 verbose=1,
-                                 save_best_only=True,
-                                 mode='min',
-                                 save_weights_only=True)
-
-        callbacks_list = [tensorboard, checkpoint, early]
-
-
-        history = model.fit_generator(train,
-                                      validation_data=valid,
-                                      validation_steps=valid.samples//valid.batch_size,
-                                      steps_per_epoch=params.STEPS_PER_EPOCH,
-                                      epochs=params.EPOCHS,
-                                      callbacks=callbacks_list,
-                                      use_multiprocessing=True,
-                                      workers=params.WORKERS)
-
-        # save loss and accuracy plots to disk
-        loss_fig_path, acc_fig_path = plot_train_metrics(
-            history, model_name,  RUN_TIMESTAMP)
-        print('Saved loss plot -> {}'.format((loss_fig_path)))
-        print('Saved accuracy plot -> {}'.format((acc_fig_path)))
-
-        # save json model config file and trained weights to disk
-        json_path, weights_path = save_model(
-            model, history, model_name, RUN_TIMESTAMP)
-        print('Saved json config -> {}'.format((json_path)))
-        print('Saved weights -> {}'.format((weights_path)))
+        fit_model(model, model_name, train, valid)
 
 
 def train():
