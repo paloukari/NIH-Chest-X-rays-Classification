@@ -49,7 +49,7 @@ def calculate_accuracies(results, labels=None, run_timestamp='unspecified'):
     print(f'Confusion matrix saved to {conf_matrix_path}')
 
     
-def plot_train_metrics(model_history, model_name, run_timestamp='unspecified'):
+def plot_train_metrics(model_history, model_name, results_folder, run_timestamp='unspecified'):
     """
         Generate and save figure with plot of train and validation losses.
         Currently, plot_type='epochs' is the only option supported.
@@ -72,9 +72,9 @@ def plot_train_metrics(model_history, model_name, run_timestamp='unspecified'):
 
     # define filenames
     loss_filename = f'{model_name}_loss_plot_val_loss_{final_val_loss:.4f}_val_acc_{final_val_acc:.4f}_{run_timestamp}.png'
-    loss_fig_path = os.path.join(params.RESULTS_FOLDER, loss_filename)
+    loss_fig_path = os.path.join(results_folder, loss_filename)
     acc_filename = f'{model_name}_accuracy_plot_val_loss_{final_val_loss:.4f}_val_acc_{final_val_acc:.4f}_{run_timestamp}.png'
-    acc_fig_path = os.path.join(params.RESULTS_FOLDER, acc_filename)
+    acc_fig_path = os.path.join(results_folder, acc_filename)
 
     # generate and save loss plot
     plt.plot(train_losses)
@@ -103,7 +103,7 @@ def plot_train_metrics(model_history, model_name, run_timestamp='unspecified'):
     return loss_fig_path, acc_fig_path
 
 
-def save_model(model, model_history, model_name, run_timestamp='unspecified'):
+def save_model(model, model_history, model_name, results_folder, run_timestamp='unspecified'):
     """
         Generate and save figure with plot of train and validation losses.
         Currently, plot_type='epochs' is the only option supported.
@@ -123,18 +123,18 @@ def save_model(model, model_history, model_name, run_timestamp='unspecified'):
     # save model config
     json_filename = f'{model_name}_config_val_loss_{final_val_loss:.4f}_val_acc_{final_val_acc:.4f}_{run_timestamp}.json'
     output_json = os.path.join(
-        params.RESULTS_FOLDER, json_filename)
+        results_folder, json_filename)
     with open(output_json, 'w') as json_file:
         json_file.write(model.to_json())
 
     # save trained model weights
     weights_filename = f'{model_name}_weights_val_loss_{final_val_loss:.4f}_val_acc_{final_val_acc:.4f}_{run_timestamp}.hdf5'
-    output_weights = os.path.join(params.RESULTS_FOLDER, weights_filename)
+    output_weights = os.path.join(results_folder, weights_filename)
     model.save_weights(output_weights)
 
     # Create symbolic link to the most recent weights (to use for testing)
     symlink_path = os.path.join(
-        params.RESULTS_FOLDER, f'{model_name}_weights_latest.hdf5')
+        results_folder, f'{model_name}_weights_latest.hdf5')
     try:
         os.symlink(output_weights, symlink_path)
     except FileExistsError:

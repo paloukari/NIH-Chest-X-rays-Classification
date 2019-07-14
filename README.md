@@ -42,33 +42,33 @@ This dataset was gathered by the NIH and contains over 100,000 anonymized chest 
 
 The image set involves diagnoses that were scraped from radiology reports and is a multi-label classification problem.  The diagram below shows the proportion of images with multi-labels in each of the 8 pathology classes and the labels' co-occurrence statistics.
 
-![Correlation of Diagnoses](results/paper%20correlation%20of%20diagnoses.png)
+![Correlation of Diagnoses](images/paper%20correlation%20of%20diagnoses.png)
 
 Comparison of multi-label classification performance with different model architectures.
 
-![Architecture Comparison](results/nn%20architecture%20comparisons.png)
+![Architecture Comparison](images/nn%20architecture%20comparisons.png)
 
 Tabulated multi-label classification performance with best results highlighted.
 
-![Architecture Results Table](results/table%20of%20architecture%20results.png)
+![Architecture Results Table](images/table%20of%20architecture%20results.png)
 
 # Data Preparation
 
 The figure below shows the distribution of findings from the diagnoses tied to the x-rays.  Here we see that 60,000 x-rays had no finding.  Therefore, for the purpose of our classification problem, we discard these results.
 
-![All Diagnoses](results/all_diagnoses.png)
+![All Diagnoses](images/all_diagnoses.png)
 
 Further, because neural networks rely upon large training sets, we discard any rare diagnoses, that is, we eliminate those with fewer than 1000 occurences.  The resulting distribution of diagnoses is shown below.
 
-![Clean Categories](results/clean_categories.png)
+![Clean Categories](images/clean_categories.png)
 
 Finally, in order to better understand the distribution of results, we can observe relative frequency to see which diagnoses are most common.
 
-![Adjusted Frequencies](results/adjusted_frequencies.png)
+![Adjusted Frequencies](images/adjusted_frequencies.png)
 
 Below are sample images that show different labled types of diagnoses along with their chest x-ray images.
 
-![High Confidence Diagnoses](results/high_confidence_diagnoses.png)
+![High Confidence Diagnoses](images/high_confidence_diagnoses.png)
 
 # Results
 
@@ -76,29 +76,29 @@ Below are sample images that show different labled types of diagnoses along with
 
 While it appears that Adagrad, and adadelt may reach convergence faster, there is no substantially different loss as a result of optimizer selection. When this function was run with larger numbers of training examples per epoch, adam outperformed (graphic not shown). Based on the results shown in the figure above, we can accept the use of adam based on this particular dataset.
 
-![Optimizer Selection](results/optimizer_selection_original.png)
+![Optimizer Selection](images/optimizer_selection_original.png)
 
 ## Batch Size and Learning Rate
 
 The table below shows batch size accumulation steps (32 x n) vs learning rate. We can see that our model achieves better loss for learning rates around 0.0005 and with a gradient accumulation step size of 8 or batch size of 256. We observed similar performance for batches both smaller and larger, so we can be confident that batch sizes of 1024, or 2048 would not yield substantially improved performance.  Going forward we can use the ADAM optimizer along with a batch size of 256 using gardient accumulation.
 
-![Batch Size and Learning Rate](results/gradient_accumulation_and_learning_rate.png)
+![Batch Size and Learning Rate](images/gradient_accumulation_and_learning_rate.png)
 
 ## Image Size
 
 Initially we trained the model making use of greyscale images, as X-ray medical images can typically be inferred to not have significant information present in the color channels.  However, this is an assumption that we also test.  Kanan and Cottrell show that the information present in RGB channels and the algorithm used to produce greyscale can be meaningful.
 
-![Grey Scale and RGB from Journal](results/journal.pone.0029740.g001.png)
+![Grey Scale and RGB from Journal](images/journal.pone.0029740.g001.png)
 
 ## Initial Results
 
 Below we can see the initial simple model created in Keras.  We make use of the mobilenet and add dense layers with a final sigmoid activation for classification prediction.
 
-![Simple Model Keras](results/simple_model_keras.png)
+![Simple Model Keras](images/simple_model_keras.png)
 
 From this model, we can see that not all diagnoses have the same levels of predictive power.  For instance, we can see that we can predict the presence of Edema much more readily than pneumonia.
 
-![Initial Results](results/barely_trained_net.png)
+![Initial Results](images/barely_trained_net.png)
 
 ## Model Architectures  
 
@@ -331,9 +331,9 @@ tensorboard --logdir=mobilenet:/src/results/tensorboard/multi/0/,resnet:/src/res
 
 #### Example Tensorboard Outputs
 
-![Example Tensorboard Graph](results/tensorboard_graph_example.png)
+![Example Tensorboard Graph](images/tensorboard_graph_example.png)
 
-![Example Multiple Comparison Tensorboard Graph](results/multi_tensorboard.png)
+![Example Multiple Comparison Tensorboard Graph](images/multi_tensorboard.png)
 
 ### Testing
 
