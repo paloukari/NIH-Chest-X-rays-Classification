@@ -17,6 +17,7 @@ This UC Berkeley Master of Information in Data Science W207 final project was de
     - [Attention Layer](#Attention-Layer)
     - [Train Frozen Model](#Train-Frozen-Model)
     - [Train Unfrozen Model](#Train-Unfrozen-Model)
+    - [Ensemble Model](#Ensemble-Model)
     - [Inference on IOT Device](#Inference-on-IOT-Device)
  - [Conclusion](#Conclusion)
  - [Installation](#Installation)
@@ -86,17 +87,29 @@ The table below shows batch size accumulation steps (32 x n) vs learning rate. W
 
 ## Image Size
 
-Initially we trained the model making use of greyscale images, as X-ray medical images can typically be inferred to not have significant information present in the color channels.  However, this is an assumption that we also test.  Kanan and Cottrell show that the information present in RGB channels and the algorithm used to produce greyscale can be meaningful.
+![Image Size Choice](images/image_size_comparison.png)
+
+![Image Size Table](images/image_size_table.png)
+
+The above table shows image size resolution. Mobile net was designed for (224 x 224). VGG19 was also designed with a native resolution of (224 x 224). However, inceptionV3 resnet was designed with a resolution of (299 x 299). We might expect no improvement in performance beyond the initial design of the network. However, model performance will be dependent upon the particular data set that is being used.  We do in fact see the best perofmrance with images of size (512 x 512). While in comparison, (224 x 224) appears to over-train and result in decreasing performance with validation loss.  Intuitively, we also observe that low resolution images such as (64 x 64) have strictly worse performance.
+
+Therefore, we will go forward with a resolution of (512 x 512), knowing with confidence that we should get results at least as good as using the native resolution of the various models (299 x 299).
+
+Initially we trained the model making use of grayscale images, as X-ray medical images can typically be inferred to not have significant information present in the color channels.  However, this is an assumption that we also test.  Kanan and Cottrell show that the information present in RGB channels and the algorithm used to produce greyscale can be meaningful.
 
 ![Grey Scale and RGB from Journal](images/journal.pone.0029740.g001.png)
 
+Because grayscale images utilize only a single channel while RGB uses 3 channels, with grayscale we can fit more images in memory and run larger batch sizes.  However, we may be sacrificing model performance by losing information.  As an experiment, a comparison was made between RGB and grayscale images for two different image sizes.  From the figure below we see negligible  performance difference between RGB and grayscale.  For the sake of conservatism, because we are running our model on a V100, we have enough memory that we can use RGB and know that we will get at worst, the same performance as with grayscale.
+
+![RGB vs Grayscale Experiment](images/rgb_vs_grayscale.png)
+
 ## Initial Results
 
-Below we can see the initial simple model created in Keras.  We make use of the mobilenet and add dense layers with a final sigmoid activation for classification prediction.
+Below we can see the results from our initial simple model created in Keras after tuning the various hyper-parameters.  We make use of the mobilenet and add dense layers with a final sigmoid activation for classification prediction.
 
 ![Simple Model Keras](images/simple_model_keras.png)
 
-From this model, we can see that not all diagnoses have the same levels of predictive power.  For instance, we can see that we can predict the presence of Edema much more readily than pneumonia.
+From this model, we can see that not all diagnoses have the same levels of predictive power.  For instance, we can see that we can predict the presence of Edema much more readily than pneumonia.  In fact, at this point we have outperformed the model across almost all of the identified diagnoses classes.  At this point, we will now see how much further improvement we can achieve with other model architectures.
 
 ![Initial Results](images/barely_trained_net.png)
 
@@ -107,6 +120,8 @@ From this model, we can see that not all diagnoses have the same levels of predi
 ## Train Frozen Model  
 
 ## Train Unfrozen Model  
+
+## Ensemble Model  
 
 ## Inference on IOT Device  
 
