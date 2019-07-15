@@ -86,9 +86,9 @@ The table below shows batch size accumulation steps (32 x n) vs learning rate. W
 
 ## Image Size
 
-![Image Size Choice](results/image_size_comparison.png)
+![Image Size Choice](images/image_size_comparison.png)
 
-![Image Size Table](results/image_size_table.png)
+![Image Size Table](images/image_size_table.png)
 
 The above table shows image size resolution. Mobile net was designed for (224 x 224). VGG19 was also designed with a native resolution of (224 x 224). However, inceptionV3 resnet was designed with a resolution of (299 x 299). We might expect no improvement in performance beyond the initial design of the network. However, model performance will be dependent upon the particular data set that is being used.  We do in fact see the best perofmrance with images of size (512 x 512). While in comparison, (224 x 224) appears to over-train and result in decreasing performance with validation loss.  Intuitively, we also observe that low resolution images such as (64 x 64) have strictly worse performance.
 
