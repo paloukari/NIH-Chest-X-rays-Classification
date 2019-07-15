@@ -14,7 +14,8 @@ pip3 install kaggle
 export KAGGLE_USERNAME=$1                                                                                                                               export KAGGLE_KEY=$2
 
 kaggle datasets download -d nih-chest-xrays/data -p /data
-unzip /data.zip -d /data
+unzip /data/data.zip -d /data
+rm /data/data.zip
 unzip '/data/*.zip' -d /data
 
 docker build -t chest_x_rays_dev -f Dockerfile.dev .
