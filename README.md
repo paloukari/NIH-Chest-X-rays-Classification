@@ -17,6 +17,7 @@ This UC Berkeley Master of Information in Data Science W207 final project was de
     - [Attention Layer](#Attention-Layer)
     - [Train Frozen Model](#Train-Frozen-Model)
     - [Train Unfrozen Model](#Train-Unfrozen-Model)
+    - [Ensemble Model](#Ensemble-Model)
     - [Inference on IOT Device](#Inference-on-IOT-Device)
  - [Conclusion](#Conclusion)
  - [Installation](#Installation)
@@ -92,7 +93,7 @@ The table below shows batch size accumulation steps (32 x n) vs learning rate. W
 
 The above table shows image size resolution. Mobile net was designed for (224 x 224). VGG19 was also designed with a native resolution of (224 x 224). However, inceptionV3 resnet was designed with a resolution of (299 x 299). We might expect no improvement in performance beyond the initial design of the network. However, model performance will be dependent upon the particular data set that is being used.  We do in fact see the best perofmrance with images of size (512 x 512). While in comparison, (224 x 224) appears to over-train and result in decreasing performance with validation loss.  Intuitively, we also observe that low resolution images such as (64 x 64) have strictly worse performance.
 
-Therefore, we will go forward with a resolution of 512 x 512, knowing with confidence that we should get results at least as good as using the native resolution of the various models (299 x 299).
+Therefore, we will go forward with a resolution of (512 x 512), knowing with confidence that we should get results at least as good as using the native resolution of the various models (299 x 299).
 
 Initially we trained the model making use of grayscale images, as X-ray medical images can typically be inferred to not have significant information present in the color channels.  However, this is an assumption that we also test.  Kanan and Cottrell show that the information present in RGB channels and the algorithm used to produce greyscale can be meaningful.
 
@@ -119,6 +120,8 @@ From this model, we can see that not all diagnoses have the same levels of predi
 ## Train Frozen Model  
 
 ## Train Unfrozen Model  
+
+## Ensemble Model  
 
 ## Inference on IOT Device  
 
