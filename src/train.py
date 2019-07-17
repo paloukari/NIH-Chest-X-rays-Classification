@@ -66,16 +66,16 @@ def create_data_generator(dataset,
         lambda x: x['Finding Labels'].split('|'), axis=1)
 
     image_generator = ImageDataGenerator(samplewise_center=True,
-                                         samplewise_std_normalization=False,
+                                         samplewise_std_normalization=True,
                                          horizontal_flip=True,
                                          vertical_flip=False,
-                                         height_shift_range=0.1,
+                                         height_shift_range=0.05,
                                          width_shift_range=0.1,
                                          brightness_range=[0.7, 1.5],
                                          rotation_range=5,
-                                         shear_range=0.01,
-                                         fill_mode='nearest',
-                                         zoom_range=0.125,
+                                         shear_range=0.1,
+                                         fill_mode='reflect',
+                                         zoom_range=0.15,
                                          preprocessing_function=preprocessing_function)
 
     dataset_generator = image_generator.flow_from_dataframe(dataframe=dataset,
@@ -152,7 +152,7 @@ def _create_attention_model(frozen_model, labels, optimizer='adam'):
     return attention_model
 
 
-def _create_base_model(Model, labels, input_shape, trainable=False, weights="imagenet"):
+def _create_base_model(Model, labels, input_shape, trainable=True, weights="imagenet"):
     '''
         Creates a Keras base model for transfer learning
 
@@ -263,10 +263,11 @@ def fit_model(model, model_name, train, valid):
     tensorboard = TensorBoard(log_dir=os.path.join(
         params.RESULTS_FOLDER, params.TENSORBOARD_BASE_FOLDER, model_name))
 
-    dynamicLR = ReduceLROnPlateau(monitor='val_loss', factor=0.2,
-                                  patience=2, min_lr=params.LEARNING_RATE/1000)
+    #dynamicLR = ReduceLROnPlateau(monitor='val_loss', factor=0.2,
+    #                              patience=2, min_lr=params.LEARNING_RATE/1000)
 
-    callbacks_list = [tensorboard, checkpoint, dynamicLR, early]
+    #callbacks_list = [tensorboard, checkpoint, dynamicLR, early]
+    callbacks_list = [tensorboard, checkpoint, early]
 
     history = model.fit_generator(train,
                                   validation_data=valid,
@@ -308,7 +309,7 @@ def train_model(_Model, input_shape, preprocessing_function,
     baseModel = _create_base_model(_Model,
                                    labels,
                                    sample_X.shape[1:],
-                                   trainable=False,
+                                   trainable=True,
                                    weights="imagenet")
 
     model = extend_model_callback(baseModel, labels, optimizer)
@@ -316,15 +317,10 @@ def train_model(_Model, input_shape, preprocessing_function,
     fit_model(model, f'{name_prefix}_{baseModel.name}',
               train_generator, validation_generator)
 
-
 def train_multiple_networks():
     '''
     Trains list of CNNs.
     '''
-
-    metadata = data_preparation.load_metadata()
-    metadata, labels = data_preparation.preprocess_metadata(metadata)
-    train, valid = data_preparation.stratify_train_test_split(metadata)
 
     # for these image sizes, we don't need gradient_accumulation to achieve BATCH_SIZE = 256
     optimizer = 'adam'
@@ -333,21 +329,33 @@ def train_multiple_networks():
             lr=params.LEARNING_RATE, accum_iters=params.ACCUMULATION_STEPS)
 
     base_models = [
-        [MobileNet, params.MOBILENET_IMG_SIZE, MobileNet_preprocess_input],
-        [InceptionResNetV2, params.INCEPTIONRESNETV2_IMG_SIZE,
+        [MobileNet, params.IMG_SIZE, MobileNet_preprocess_input],
+        [InceptionResNetV2, params.IMG_SIZE,
             InceptionResNetV2_preprocess_input],
-        [VGG19, params.VGG19_IMG_SIZE, VGG19_preprocess_input],
-        [InceptionV3, params.INCEPTIONV3_IMG_SIZE, InceptionV3_preprocess_input],
-        [MobileNetV2, params.MOBILENETV2_IMG_SIZE, MobileNetV2_preprocess_input],
-        [NASNetLarge, params.NASNETLARGE_IMG_SIZE, NASNetLarge_preprocess_input],
+        [VGG19, params.IMG_SIZE, VGG19_preprocess_input],
+        [InceptionV3, params.IMG_SIZE, InceptionV3_preprocess_input],
+        [MobileNetV2, params.IMG_SIZE, MobileNetV2_preprocess_input],
+        [NASNetLarge, params.IMG_SIZE, NASNetLarge_preprocess_input],
     ]
 
     for [_Model, input_shape, preprocess_input] in base_models:
+        #Generate Train and Validation Data
+        metadata = data_preparation.load_metadata()
+        metadata, labels = data_preparation.preprocess_metadata(metadata)
+        train, valid = data_preparation.stratify_train_test_split(metadata)
+
+        #Train Model
         train_model(_Model, input_shape, preprocess_input,
                     train, valid, labels,
                     create_simple_model, optimizer, 'simple')
 
     for [_Model, input_shape, preprocess_input] in base_models:
+        #Generate Train and Validation Data
+        metadata = data_preparation.load_metadata()
+        metadata, labels = data_preparation.preprocess_metadata(metadata)
+        train, valid = data_preparation.stratify_train_test_split(metadata)
+        
+        #Train Model
         train_model(_Model, input_shape, preprocess_input,
                     train, valid, labels,
                     create_attention_model, optimizer, 'attention')
