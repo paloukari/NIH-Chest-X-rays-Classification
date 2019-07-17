@@ -310,7 +310,7 @@ def train_model(_Model, input_shape, preprocessing_function,
                                    labels,
                                    sample_X.shape[1:],
                                    trainable=True,
-                                   weights="imagenet")
+                                   weights=None)
 
     model = extend_model_callback(baseModel, labels, optimizer)
 
