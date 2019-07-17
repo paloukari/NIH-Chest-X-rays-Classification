@@ -338,23 +338,19 @@ def train_multiple_networks():
         [NASNetLarge, params.IMG_SIZE, NASNetLarge_preprocess_input],
     ]
 
-    for [_Model, input_shape, preprocess_input] in base_models:
-        #Generate Train and Validation Data
-        metadata = data_preparation.load_metadata()
-        metadata, labels = data_preparation.preprocess_metadata(metadata)
-        train, valid = data_preparation.stratify_train_test_split(metadata)
+    #Generate Train and Validation Data
+    metadata = data_preparation.load_metadata()
+    metadata, labels = data_preparation.preprocess_metadata(metadata)
+    train, valid = data_preparation.stratify_train_test_split(metadata)
 
+
+    for [_Model, input_shape, preprocess_input] in base_models:
         #Train Model
         train_model(_Model, input_shape, preprocess_input,
                     train, valid, labels,
                     create_simple_model, optimizer, 'simple')
 
     for [_Model, input_shape, preprocess_input] in base_models:
-        #Generate Train and Validation Data
-        metadata = data_preparation.load_metadata()
-        metadata, labels = data_preparation.preprocess_metadata(metadata)
-        train, valid = data_preparation.stratify_train_test_split(metadata)
-        
         #Train Model
         train_model(_Model, input_shape, preprocess_input,
                     train, valid, labels,
