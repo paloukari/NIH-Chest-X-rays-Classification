@@ -29,8 +29,10 @@ from keras.callbacks import TensorBoard, ModelCheckpoint, \
     LearningRateScheduler, EarlyStopping, ReduceLROnPlateau
 from keras.optimizers import Adam
 
-import numpy as np
+import matplotlib.pyplot as plt
 
+import numpy as np
+from sklearn.metrics import roc_curve, auc
 import data_preparation
 import params
 import reset
@@ -40,6 +42,17 @@ from utils import plot_train_metrics, save_model
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 
 RUN_TIMESTAMP = datetime.datetime.now().isoformat('-')
+
+
+base_models = [
+    [MobileNet, params.MOBILENET_IMG_SIZE, MobileNet_preprocess_input],
+    [InceptionResNetV2, params.INCEPTIONRESNETV2_IMG_SIZE,
+     InceptionResNetV2_preprocess_input],
+    [VGG19, params.VGG19_IMG_SIZE, VGG19_preprocess_input],
+    [InceptionV3, params.INCEPTIONV3_IMG_SIZE, InceptionV3_preprocess_input],
+    [MobileNetV2, params.MOBILENETV2_IMG_SIZE, MobileNetV2_preprocess_input],
+    [NASNetLarge, params.NASNETLARGE_IMG_SIZE, NASNetLarge_preprocess_input],
+]
 
 
 def create_data_generator(dataset,
@@ -66,16 +79,16 @@ def create_data_generator(dataset,
         lambda x: x['Finding Labels'].split('|'), axis=1)
 
     image_generator = ImageDataGenerator(samplewise_center=True,
-                                         samplewise_std_normalization=False,
+                                         samplewise_std_normalization=True,
                                          horizontal_flip=True,
                                          vertical_flip=False,
-                                         height_shift_range=0.1,
+                                         height_shift_range=0.05,
                                          width_shift_range=0.1,
-                                         brightness_range=[0.7, 1.5],
+                                         #brightness_range=[0.7, 1.5],
                                          rotation_range=5,
-                                         shear_range=0.01,
-                                         fill_mode='nearest',
-                                         zoom_range=0.125,
+                                         shear_range=0.1,
+                                         fill_mode='reflect',
+                                         zoom_range=0.15,
                                          preprocessing_function=preprocessing_function)
 
     dataset_generator = image_generator.flow_from_dataframe(dataframe=dataset,
@@ -264,7 +277,7 @@ def fit_model(model, model_name, train, valid):
         params.RESULTS_FOLDER, params.TENSORBOARD_BASE_FOLDER, model_name))
 
     dynamicLR = ReduceLROnPlateau(monitor='val_loss', factor=0.2,
-                                  patience=2, min_lr=params.LEARNING_RATE/1000)
+                                  patience=2, min_lr=params.LEARNING_RATE/100)
 
     callbacks_list = [tensorboard, checkpoint, dynamicLR, early]
 
@@ -289,35 +302,116 @@ def fit_model(model, model_name, train, valid):
     print(f'Saved json config -> {json_path}')
     print(f'Saved weights -> {weights_path}')
 
+    return model
 
-def train_model(_Model, input_shape, preprocessing_function,
+
+def plot_ROC(labels, test_Y, pred_Y, model_name):
+    fig, c_ax = plt.subplots(1, 1, figsize=(9, 9))
+    for (idx, c_label) in enumerate(labels):
+        fpr, tpr, thresholds = roc_curve(
+            test_Y[:, idx].astype(int), pred_Y[:, idx])
+        c_ax.plot(fpr, tpr, label='%s (AUC:%0.2f)' % (c_label, auc(fpr, tpr)))
+    c_ax.legend()
+    c_ax.set_title(model_name+' ROC Curve')
+    c_ax.set_xlabel('False Positive Rate')
+    c_ax.set_ylabel('True Positive Rate')
+
+    ROC_image_file_path = os.path.join(
+        params.RESULTS_FOLDER, model_name, model_name + '_ROC.png')
+
+    fig.savefig(ROC_image_file_path)
+    print('Saved ROC plot at'+ROC_image_file_path)
+
+
+def train_model(_Model, input_shape, transfer_learing,
+                preprocessing_function,
                 train, valid, labels,
-                extend_model_callback, optimizer, name_prefix):
+                extend_model_callback, optimizer,
+                name_prefix, weights="imagenet"):
     '''
     Trains a model based on the give Keras pre-trained class.
     '''
+
+    if not transfer_learing:
+        weights = None
 
     train_generator = create_data_generator(
         train, labels, params.BATCH_SIZE, preprocessing_function, target_size=input_shape)
     validation_generator = create_data_generator(
         valid, labels, params.VALIDATION_BATCH_SIZE, preprocessing_function, target_size=input_shape)
 
-    sample_X, sample_Y = next(create_data_generator(
-        train, labels, params.BATCH_SIZE, preprocessing_function, target_size=input_shape))
+    test_X, test_Y = next(create_data_generator(
+        valid, labels, 10000, None, target_size=input_shape))
 
     baseModel = _create_base_model(_Model,
                                    labels,
-                                   sample_X.shape[1:],
+                                   test_X.shape[1:],
+                                   trainable=not transfer_learing,
+                                   weights=weights)
+
+    model = extend_model_callback(baseModel, labels, optimizer)
+    model_name = f'{name_prefix}_{baseModel.name}'
+
+    model = fit_model(model, model_name,
+                      train_generator, validation_generator)
+
+    # print ROC
+    pred_Y = model.predict(test_X, batch_size=32, verbose=True)
+
+    plot_ROC(labels, test_Y, pred_Y, model_name)
+
+
+def plot_model_ROC(_Model, input_shape, preprocessing_function,
+                   train, valid, labels,
+                   extend_model_callback, optimizer, name_prefix):
+
+    test_X, test_Y = next(create_data_generator(
+        valid, labels, 10000, None, target_size=input_shape))
+
+    baseModel = _create_base_model(_Model,
+                                   labels,
+                                   test_X.shape[1:],
                                    trainable=False,
-                                   weights="imagenet")
+                                   weights=None)
 
     model = extend_model_callback(baseModel, labels, optimizer)
 
-    fit_model(model, f'{name_prefix}_{baseModel.name}',
-              train_generator, validation_generator)
+    model_name = name_prefix+'_' + baseModel.name
+
+    weights = os.path.join(params.RESULTS_FOLDER,
+                           model_name, 'weights.best.hdf5')
+
+    print('Loading '+weights)
+    model.load_weights(weights, by_name=True)
+    model.trainable = False
+
+    pred_Y = model.predict(test_X, batch_size=32, verbose=True)
+
+    plot_ROC(labels, test_Y, pred_Y, model_name)
 
 
-def train_multiple_networks():
+def plot_ROCs():
+    metadata = data_preparation.load_metadata()
+    metadata, labels = data_preparation.preprocess_metadata(metadata)
+    train, valid = data_preparation.stratify_train_test_split(metadata)
+
+    # for these image sizes, we don't need gradient_accumulation to achieve BATCH_SIZE = 256
+    optimizer = 'adam'
+    if params.DEFAULT_OPTIMIZER != optimizer:
+        optimizer = gradient_accumulation.AdamAccumulate(
+            lr=params.LEARNING_RATE, accum_iters=params.ACCUMULATION_STEPS)
+
+    custome_layers = [[create_simple_model, 'simple'],
+                      [create_attention_model, 'attention']]
+
+    for [custome_layer, name_prefix] in custome_layers:
+        for [_Model, input_shape, preprocess_input] in base_models:
+            plot_model_ROC(_Model, input_shape, preprocess_input,
+                           train, valid, labels,
+                           custome_layer, optimizer, name_prefix)
+
+
+def train_multiple_networks(image_size=None, transfer_learing=True, use_preprocess_input=False):
     '''
     Trains list of CNNs.
     '''
@@ -328,30 +422,33 @@ def train_multiple_networks():
 
     # for these image sizes, we don't need gradient_accumulation to achieve BATCH_SIZE = 256
     optimizer = 'adam'
-    if params.BATCH_SIZE < 256:
+    if params.DEFAULT_OPTIMIZER != optimizer:
         optimizer = gradient_accumulation.AdamAccumulate(
             lr=params.LEARNING_RATE, accum_iters=params.ACCUMULATION_STEPS)
 
-    base_models = [
-        [MobileNet, params.MOBILENET_IMG_SIZE, MobileNet_preprocess_input],
-        [InceptionResNetV2, params.INCEPTIONRESNETV2_IMG_SIZE,
-            InceptionResNetV2_preprocess_input],
-        [VGG19, params.VGG19_IMG_SIZE, VGG19_preprocess_input],
-        [InceptionV3, params.INCEPTIONV3_IMG_SIZE, InceptionV3_preprocess_input],
-        [MobileNetV2, params.MOBILENETV2_IMG_SIZE, MobileNetV2_preprocess_input],
-        [NASNetLarge, params.NASNETLARGE_IMG_SIZE, NASNetLarge_preprocess_input],
-    ]
+    unfrozen = 'unfrozen_'
+    if transfer_learing:
+        unfrozen = ''
+    custome_layers = [[create_simple_model, unfrozen+'latest_simple'],
+                      [create_attention_model, unfrozen+'latest_attention']]
 
-    for [_Model, input_shape, preprocess_input] in base_models:
-        train_model(_Model, input_shape, preprocess_input,
-                    train, valid, labels,
-                    create_simple_model, optimizer, 'simple')
+    for [custome_layer, name_prefix] in custome_layers:
+        for [_Model, input_shape, preprocess_input] in base_models:
+            _image_size = image_size
+            if _image_size is None:
+                _image_size = input_shape
+            _preprocess_input = preprocess_input
+            if not use_preprocess_input:
+                _preprocess_input = None
+            train_model(_Model, _image_size, transfer_learing, _preprocess_input,
+                        train, valid, labels,
+                        custome_layer, optimizer, name_prefix)
 
-    for [_Model, input_shape, preprocess_input] in base_models:
-        train_model(_Model, input_shape, preprocess_input,
-                    train, valid, labels,
-                    create_attention_model, optimizer, 'attention')
 
 if __name__ == '__main__':
     reset.reset_keras()
-    train_multiple_networks()
+    # train transfer learning
+    train_multiple_networks(use_preprocess_input = True)
+    # train from scratch
+    train_multiple_networks(
+        image_size=params.LARGE_IMG_SIZE, transfer_learing=False)
