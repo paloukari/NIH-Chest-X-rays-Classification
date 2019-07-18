@@ -274,9 +274,7 @@ def fit_model(model, model_name, train, valid):
                                   validation_steps=valid.samples//valid.batch_size,
                                   steps_per_epoch=train.samples//train.batch_size,
                                   epochs=params.EPOCHS,
-                                  callbacks=callbacks_list,
-                                  use_multiprocessing=True,
-                                  workers=params.WORKERS)
+                                  callbacks=callbacks_list)
 
     # save loss and accuracy plots to disk
     loss_fig_path, acc_fig_path = plot_train_metrics(
@@ -329,7 +327,7 @@ def train_multiple_networks():
             lr=params.LEARNING_RATE, accum_iters=params.ACCUMULATION_STEPS)
 
     base_models = [
-        [MobileNet, params.IMG_SIZE, MobileNet_preprocess_input],
+        #[MobileNet, params.IMG_SIZE, MobileNet_preprocess_input],
         [InceptionResNetV2, params.IMG_SIZE,
             InceptionResNetV2_preprocess_input],
         [VGG19, params.IMG_SIZE, VGG19_preprocess_input],
@@ -342,7 +340,6 @@ def train_multiple_networks():
     metadata = data_preparation.load_metadata()
     metadata, labels = data_preparation.preprocess_metadata(metadata)
     train, valid = data_preparation.stratify_train_test_split(metadata)
-
 
     for [_Model, input_shape, preprocess_input] in base_models:
         #Train Model
