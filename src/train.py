@@ -328,12 +328,11 @@ def train_multiple_networks():
 
     base_models = [
         #[MobileNet, params.IMG_SIZE, MobileNet_preprocess_input],
-        [InceptionResNetV2, params.IMG_SIZE,
-            InceptionResNetV2_preprocess_input],
+        #[InceptionResNetV2, params.IMG_SIZE, InceptionResNetV2_preprocess_input],
         [VGG19, params.IMG_SIZE, VGG19_preprocess_input],
         [InceptionV3, params.IMG_SIZE, InceptionV3_preprocess_input],
         [MobileNetV2, params.IMG_SIZE, MobileNetV2_preprocess_input],
-        [NASNetLarge, params.IMG_SIZE, NASNetLarge_preprocess_input],
+        #[NASNetLarge, params.IMG_SIZE, NASNetLarge_preprocess_input],
     ]
 
     #Generate Train and Validation Data
@@ -341,11 +340,11 @@ def train_multiple_networks():
     metadata, labels = data_preparation.preprocess_metadata(metadata)
     train, valid = data_preparation.stratify_train_test_split(metadata)
 
-    for [_Model, input_shape, preprocess_input] in base_models:
-        #Train Model
-        train_model(_Model, input_shape, preprocess_input,
-                    train, valid, labels,
-                    create_simple_model, optimizer, 'simple')
+    # for [_Model, input_shape, preprocess_input] in base_models:
+    #     #Train Model
+    #     train_model(_Model, input_shape, preprocess_input,
+    #                 train, valid, labels,
+    #                 create_simple_model, optimizer, 'simple')
 
     for [_Model, input_shape, preprocess_input] in base_models:
         #Train Model
