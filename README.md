@@ -67,7 +67,7 @@ Finally, in order to better understand the distribution of results, we can obser
 
 ![Adjusted Frequencies](images/adjusted_frequencies.png)
 
-Below are sample images that show different labled types of diagnoses along with their chest x-ray images.
+Below are sample images that show different labeled types of diagnoses along with their chest x-ray images.
 
 ![High Confidence Diagnoses](images/high_confidence_diagnoses.png)
 
@@ -81,7 +81,7 @@ While it appears that Adagrad, and adadelt may reach convergence faster, there i
 
 ## Batch Size and Learning Rate
 
-The table below shows batch size accumulation steps (32 x n) vs learning rate. We can see that our model achieves better loss for learning rates around 0.0005 and with a gradient accumulation step size of 8 or batch size of 256. We observed similar performance for batches both smaller and larger, so we can be confident that batch sizes of 1024, or 2048 would not yield substantially improved performance.  Going forward we can use the ADAM optimizer along with a batch size of 256 using gardient accumulation.
+The table below shows batch size accumulation steps (32 x n) vs learning rate. We can see that our model achieves better loss for learning rates around 0.0005 and with a gradient accumulation step size of 8 or batch size of 256. We observed similar performance for batches both smaller and larger, so we can be confident that batch sizes of 1024, or 2048 would not yield substantially improved performance.  Going forward we can use the ADAM optimizer along with a batch size of 256 using gradient accumulation.
 
 ![Batch Size and Learning Rate](images/gradient_accumulation_and_learning_rate.png)
 
@@ -91,11 +91,11 @@ The table below shows batch size accumulation steps (32 x n) vs learning rate. W
 
 ![Image Size Table](images/image_size_table.png)
 
-The above table shows image size resolution. Mobile net was designed for (224 x 224). VGG19 was also designed with a native resolution of (224 x 224). However, inceptionV3 resnet was designed with a resolution of (299 x 299). We might expect no improvement in performance beyond the initial design of the network. However, model performance will be dependent upon the particular data set that is being used.  We do in fact see the best perofmrance with images of size (512 x 512). While in comparison, (224 x 224) appears to over-train and result in decreasing performance with validation loss.  Intuitively, we also observe that low resolution images such as (64 x 64) have strictly worse performance.
+The above table shows image size resolution. Mobile net was designed for (224 x 224). VGG19 was also designed with a native resolution of (224 x 224). However, inceptionV3 `1111111111111111111` was designed with a resolution of (299 x 299). We might expect no improvement in performance beyond the initial design of the network. However, model performance will be dependent upon the particular data set that is being used.  We do in fact see the best performance with images of size (512 x 512). While in comparison, (224 x 224) appears to over-train and result in decreasing performance with validation loss.  Intuitively, we also observe that low resolution images such as (64 x 64) have strictly worse performance.
 
 Therefore, we will go forward with a resolution of (512 x 512), knowing with confidence that we should get results at least as good as using the native resolution of the various models (299 x 299).
 
-Initially we trained the model making use of grayscale images, as X-ray medical images can typically be inferred to not have significant information present in the color channels.  However, this is an assumption that we also test.  Kanan and Cottrell show that the information present in RGB channels and the algorithm used to produce greyscale can be meaningful.
+Initially we trained the model making use of grayscale images, as X-ray medical images can typically be inferred to not have significant information present in the color channels.  However, this is an assumption that we also test.  Kanan and Cottrell show that the information present in RGB channels and the algorithm used to produce grayscale can be meaningful.
 
 ![Grey Scale and RGB from Journal](images/journal.pone.0029740.g001.png)
 
