@@ -37,6 +37,22 @@ The figure below shows the general roadmap to create our final model.
 
 ![Roadmap](docs/W207_Project_Roadmap.png)
 
+# Technologies
+
+## Convolutional Neural Networks
+
+
+
+### VGG
+![VGG Architecture](images/vgg_arch.png)
+
+
+### ResNet
+![ResNet Architecture](images/resnet_arch.png)
+
+### MobileNet 
+
+
 # Background
 
 This dataset was gathered by the NIH and contains over 100,000 anonymized chest x-ray images from more than 30,000 patients. The results shown below are taken from Wang et. al.
