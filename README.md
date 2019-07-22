@@ -125,9 +125,17 @@ From this model, we can see that not all diagnoses have the same levels of predi
 
 ## Inference on IOT Device  
 
+[Code for Inference on TX2 in a Jupyter Notebook](tx2/inference.ipynb)
+
 After the models are fully trained on a powerful machine, in this case, a V100 on the ibmcloud, we may ultimately want to use the models on an internet of things (IOT) device.  This could be extremely useful for applications where interpretation of an X-ray is not easily possible, for instance in a 3rd world country, or a field application such as in the military.
 
-We converted the codebase and containerized the process to easily build and distribute this functionality.  This code base supports both jupyter notebook or command line inference.  For ease of use, shell scripts are used to start and end the container.  Execution of the docker commands is shown below:
+This project utilizes NVIDIA TX2 for runtime inference.  These are mobile devices with reasonably powerful GPUs onboard.  Because there is limited GPU RAM, we will have to use much smaller batch sizes.
+
+![nvidia_tx2](images/nvidia_tx2.png)
+
+We converted the codebase and containerized the process to easily build and distribute this functionality.  This code base supports both jupyter notebook or command line inference.  For ease of use, shell scripts are used to start and end the container.  
+
+Execution of the docker commands is shown below:
 
 ### Jupyter Notebook
 ```
@@ -153,6 +161,11 @@ docker run \
 -ti tensorflow_tx2 \
 /bin/sh -c 'cd content/project; python3 ./inference.py'
 ```
+
+For simplicity and performance, we utilized the mobilenet architecture.  The trained weights are lightweight (15MB) and the model can easily fit on many IOT device GPUs.  Below is the ROC graph from runtime inference.
+
+![TX2 Inference](images/tx2_roc_mobilenet.png)
+
 # Conclusion
 
 We were ultimately able to achieve binary classification performance of XX%.
