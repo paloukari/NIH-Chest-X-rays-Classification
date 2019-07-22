@@ -169,6 +169,13 @@ We can then use these fully trained models for inference or ensemble them togeth
 
 [Code for Ensemble Model](src/ensemble_model.ipynb)
 
+
+![Ensemble Table](images/ensemble_results_table.png)
+
+![Hard Vote Ensemble](images/hard_vote_ensemble.png)
+
+![Weighted Average Ensemble](images/weighted_ensemble_roc.png)
+
 ## Inference on IOT Device  
 
 [Code for Inference on TX2 in a Jupyter Notebook](tx2/inference.ipynb)
