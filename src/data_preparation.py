@@ -69,7 +69,7 @@ def preprocess_metadata(metadata, minimum_cases=params.MIN_CASES):
     sample_weights = metadata['Finding Labels'].map(
         lambda x: len(x.split('|')) if len(x) > 0 else 0).values + 4e-2
     sample_weights /= sample_weights.sum()
-    metadata = metadata.sample(40000, weights=sample_weights)
+    metadata = metadata.sample(80000, weights=sample_weights)
 
     labels_count = [(c_label, int(metadata[c_label].sum()))
                     for c_label in labels]
