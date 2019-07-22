@@ -6,6 +6,7 @@ This UC Berkeley Master of Information in Data Science W207 final project was de
 # Table of Contents
 
  - [Project Overview](#Project-Overview) 
+ - [Technologies](#Technologies) 
  - [Background](#Background)
  - [Data Preparation](#Data-Preparation)
  - [Results](#Results)
@@ -40,24 +41,25 @@ The figure below shows the general roadmap to create our final model.
 # Technologies
 
 ## Convolutional Neural Networks
-[Convolutional Neural Networks (CNN's)](http://deeplearning.stanford.edu/tutorial/supervised/ConvolutionalNeuralNetwork/) are special types of neural networks that are most often applied to image processing problems. What makes them unique from traditional neural networks is the convolutional layer, a layer in which neurons are connected to pixels only in their receptive fields rather than every single pixel. The result is the ability to extract features while significantly reducing dimensionality. CNN's got their start when two neurophysiologists, David Hubel and Torsten Wiesel, published pioneering research on the response of a cat's visual cortical neurons to stimuli. After many unsuccessful attempts, 
+[Convolutional Neural Networks (CNN's)](http://deeplearning.stanford.edu/tutorial/supervised/ConvolutionalNeuralNetwork/) are special types of neural networks that are most often applied to image processing problems. What makes them unique from traditional neural networks is the convolutional layer, a layer in which neurons are connected to pixels only in their receptive fields rather than every single pixel. The result is the ability to extract features while significantly reducing dimensionality. CNN's got their start when two neurophysiologists, David Hubel and Torsten Wiesel, published pioneering research on the response of a cat's visual cortical neurons to stimuli. Soon after, researchers used some of the findings as inspiration for implimenting a convolution layer to neural networks. In the 1990's Yann LeCun, Leon Bottou, Yosuha Bengio and Patrick Haffner introduced a groundbreaking algorithm called LeNet-5 for classifying handwritten digits. 
 
-This project utilizes three different CNN's, VGG, ResNet, and MobileNet, to process the dataset with varying results. 
+![LeNet-5's Architecture](images/lenet_arch.jpg)
 
-### VGG
+LeNet-5 proved to be exceedingly influential to the design of CNN architechtures. Many teams implimented architechtures that were similar to LeNet at the begining of the century making modest gains in accuracy. In 2012, a team from the University of Toronto entered a convolutional neural network named AlexNet into the ImageNet Large Scale Visual Recognition Competition (ILSVRC) that blew the competition out of the water. Before AlexNet, the state of the art had an error rate of about 26%. AlexNet had an error rate of only 16.4%. 
 
-
+## VGG
+After the success of AlexNet at the ILSVRC in 2012, the top preforming algorithms were dominated by convolutional neural networks. In 2014, a team from Google submitted a CNN that reduced the error rate to under 7%. In the same year, a runner up team of Karen Simonyan, Andrew Zisserman submitted [VGG](https://arxiv.org/abs/1409.1556). In the ILSVRC, VGG19, the architechture that was used in this project, earned an error rate of 9%. Moreover, it accomplished this while boasting an extremely simple architecture of only 3x3 convolutional layers stacked on top of each other. The VGG is shown below.  
 
 ![VGG Architecture](images/vgg_arch.png)
 
 
-### ResNet
+## ResNet
 ![ResNet Architecture](images/resnet_arch.png)
 
-### MobileNet 
+## MobileNet 
 
 
-# Background
+# Data Background
 
 This dataset was gathered by the NIH and contains over 100,000 anonymized chest x-ray images from more than 30,000 patients. The results shown below are taken from Wang et. al.
 
