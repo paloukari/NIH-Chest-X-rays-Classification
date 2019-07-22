@@ -15,7 +15,6 @@ This UC Berkeley Master of Information in Data Science W207 final project was de
     - [Initial Results](#Initial-Results)
     - [Model Architectures](#Model-Architectures)
     - [Attention Layer](#Attention-Layer)
-    - [Train Frozen Model](#Train-Frozen-Model)
     - [Train Unfrozen Model](#Train-Unfrozen-Model)
     - [Ensemble Model](#Ensemble-Model)
     - [Inference on IOT Device](#Inference-on-IOT-Device)
@@ -55,6 +54,8 @@ Tabulated multi-label classification performance with best results highlighted.
 
 # Data Preparation
 
+[Code for Data Preparation](src/v2-train-simple-xray-cnn-multi-binarizer.ipynb)
+
 The figure below shows the distribution of findings from the diagnoses tied to the x-rays.  Here we see that 60,000 x-rays had no finding.  Therefore, for the purpose of our classification problem, we discard these results.
 
 ![All Diagnoses](images/all_diagnoses.png)
@@ -75,17 +76,23 @@ Below are sample images that show different labled types of diagnoses along with
 
 ## Optimizer Selection
 
+[Code for Optimizer Selection](src/v2-train-simple-xray-cnn-multi-binarizer.ipynb)
+
 While it appears that Adagrad, and adadelt may reach convergence faster, there is no substantially different loss as a result of optimizer selection. When this function was run with larger numbers of training examples per epoch, adam outperformed (graphic not shown). Based on the results shown in the figure above, we can accept the use of adam based on this particular dataset.
 
 ![Optimizer Selection](images/optimizer_selection_original.png)
 
 ## Batch Size and Learning Rate
 
+[Code for Batch Size and Learning Rate Determination](src/v2-train-simple-xray-cnn-multi-binarizer.ipynb)
+
 The table below shows batch size accumulation steps (32 x n) vs learning rate. We can see that our model achieves better loss for learning rates around 0.0005 and with a gradient accumulation step size of 8 or batch size of 256. We observed similar performance for batches both smaller and larger, so we can be confident that batch sizes of 1024, or 2048 would not yield substantially improved performance.  Going forward we can use the ADAM optimizer along with a batch size of 256 using gardient accumulation.
 
 ![Batch Size and Learning Rate](images/gradient_accumulation_and_learning_rate.png)
 
 ## Image Size
+
+[Code for Image Size Tuning](src/v3-train-simple-xray-cnn-multi-binarizer.ipynb)
 
 ![Image Size Choice](images/image_size_comparison.png)
 
@@ -105,6 +112,8 @@ Because grayscale images utilize only a single channel while RGB uses 3 channels
 
 ## Initial Results
 
+[Code for Initial Results](src/v3-train-simple-xray-cnn-multi-binarizer.ipynb)
+
 Below we can see the results from our initial simple model created in Keras after tuning the various hyper-parameters.  We make use of the mobilenet and add dense layers with a final sigmoid activation for classification prediction.
 
 ![Simple Model Keras](images/simple_model_keras.png)
@@ -115,13 +124,33 @@ From this model, we can see that not all diagnoses have the same levels of predi
 
 ## Model Architectures  
 
+[Code for Model Architecture Determination](src/train.py)
+
+In order to 
+
+![All Networks Validation Accuracy](images/all_model_validation_accuracy.png)
+
+![All Networks Validation Loss](images/all_model_validation_loss.png)
+
 ## Attention Layer  
 
-## Train Frozen Model  
+[Code for Attention Layer](src/v3-train-simple-xray-cnn-multi-binarizer.ipynb)
+
+We can attempt to improve our model through the use of an attention layer.  The attention layer localizes the region of the image that is strongly activating the specific classes, in this case, a particular diagnosis.  This can improve the performance of the network as well as ultimately aid in the interpretability of our model by visualizing the attention layer as shown below in the following figures.
+
+![Attention Improvement](images/attention_improvement.png)
+
+We can see that for a given network we boosted the binary accuracy by approximately 2% with the inclusion of the attention layer when compared with the frozen network.
+
+![Attention Map Images](images/attention_map.png)
 
 ## Train Unfrozen Model  
 
+[Code for Model Architecture Determination](src/train.py)
+
 ## Ensemble Model  
+
+[Code for Ensemble Model](src/ensemble_model.ipynb)
 
 ## Inference on IOT Device  
 
@@ -399,3 +428,4 @@ tensorboard --logdir=mobilenet:/src/results/tensorboard/multi/0/,resnet:/src/res
 
  - https://www.kaggle.com/nih-chest-xrays/data
  - Kanan C, Cottrell GW (2012) Color-to-Grayscale: Does the Method Matter in Image Recognition? PLoS ONE 7(1): e29740. https://doi.org/10.1371/journal.pone.0029740
+ - Skymind. "A Beginner's Guide to Attention Mechanisms and Memory Networks". https://skymind.ai/wiki/attention-mechanism-memory-network
