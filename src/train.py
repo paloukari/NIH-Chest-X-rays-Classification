@@ -45,12 +45,12 @@ RUN_TIMESTAMP = datetime.datetime.now().isoformat('-')
 
 
 base_models = [
+    [VGG19, params.VGG19_IMG_SIZE, VGG19_preprocess_input],
     [MobileNet, params.MOBILENET_IMG_SIZE, MobileNet_preprocess_input],
+    [MobileNetV2, params.MOBILENETV2_IMG_SIZE, MobileNetV2_preprocess_input],
+    [InceptionV3, params.INCEPTIONV3_IMG_SIZE, InceptionV3_preprocess_input],
     [InceptionResNetV2, params.INCEPTIONRESNETV2_IMG_SIZE,
      InceptionResNetV2_preprocess_input],
-    [VGG19, params.VGG19_IMG_SIZE, VGG19_preprocess_input],
-    [InceptionV3, params.INCEPTIONV3_IMG_SIZE, InceptionV3_preprocess_input],
-    [MobileNetV2, params.MOBILENETV2_IMG_SIZE, MobileNetV2_preprocess_input],
     [NASNetLarge, params.NASNETLARGE_IMG_SIZE, NASNetLarge_preprocess_input],
 ]
 
@@ -340,8 +340,7 @@ def train_model(_Model, input_shape, transfer_learing,
     validation_generator = create_data_generator(
         valid, labels, params.VALIDATION_BATCH_SIZE, preprocessing_function, target_size=input_shape)
 
-    test_X, test_Y = next(create_data_generator(
-        valid, labels, 10000, None, target_size=input_shape))
+    test_X, test_Y = next(validation_generator)
 
     baseModel = _create_base_model(_Model,
                                    labels,
@@ -356,14 +355,18 @@ def train_model(_Model, input_shape, transfer_learing,
                       train_generator, validation_generator)
 
     # print ROC
+    test_X, test_Y = next(create_data_generator(
+        valid, labels, 10000, None, target_size=input_shape))
     pred_Y = model.predict(test_X, batch_size=32, verbose=True)
 
     plot_ROC(labels, test_Y, pred_Y, model_name)
 
 
-def plot_model_ROC(_Model, input_shape, preprocessing_function,
-                   train, valid, labels,
-                   extend_model_callback, optimizer, name_prefix):
+def plot_model_ROC(_Model, input_shape, transfer_learing,
+                preprocessing_function,
+                train, valid, labels,
+                extend_model_callback, optimizer,
+                name_prefix, weights="imagenet"):
 
     test_X, test_Y = next(create_data_generator(
         valid, labels, 10000, None, target_size=input_shape))
@@ -389,29 +392,8 @@ def plot_model_ROC(_Model, input_shape, preprocessing_function,
 
     plot_ROC(labels, test_Y, pred_Y, model_name)
 
+def loop_in_combinations(callback, image_size=None, transfer_learing=True, use_preprocess_input=False):
 
-def plot_ROCs():
-    metadata = data_preparation.load_metadata()
-    metadata, labels = data_preparation.preprocess_metadata(metadata)
-    train, valid = data_preparation.stratify_train_test_split(metadata)
-
-    # for these image sizes, we don't need gradient_accumulation to achieve BATCH_SIZE = 256
-    optimizer = 'adam'
-    if params.DEFAULT_OPTIMIZER != optimizer:
-        optimizer = gradient_accumulation.AdamAccumulate(
-            lr=params.LEARNING_RATE, accum_iters=params.ACCUMULATION_STEPS)
-
-    custome_layers = [[create_simple_model, 'simple'],
-                      [create_attention_model, 'attention']]
-
-    for [custome_layer, name_prefix] in custome_layers:
-        for [_Model, input_shape, preprocess_input] in base_models:
-            plot_model_ROC(_Model, input_shape, preprocess_input,
-                           train, valid, labels,
-                           custome_layer, optimizer, name_prefix)
-
-
-def train_multiple_networks(image_size=None, transfer_learing=True, use_preprocess_input=False):
     '''
     Trains list of CNNs.
     '''
@@ -429,10 +411,12 @@ def train_multiple_networks(image_size=None, transfer_learing=True, use_preproce
     unfrozen = 'unfrozen_'
     if transfer_learing:
         unfrozen = ''
-    custome_layers = [[create_simple_model, unfrozen+'latest_simple'],
-                      [create_attention_model, unfrozen+'latest_attention']]
+    custom_layers = [
+        [create_attention_model, unfrozen+'latest_attention'],
+        [create_simple_model, unfrozen+'latest_simple'],
+    ]
 
-    for [custome_layer, name_prefix] in custome_layers:
+    for [custome_layer, name_prefix] in custom_layers:
         for [_Model, input_shape, preprocess_input] in base_models:
             _image_size = image_size
             if _image_size is None:
@@ -440,9 +424,19 @@ def train_multiple_networks(image_size=None, transfer_learing=True, use_preproce
             _preprocess_input = preprocess_input
             if not use_preprocess_input:
                 _preprocess_input = None
-            train_model(_Model, _image_size, transfer_learing, _preprocess_input,
+            callback(_Model, _image_size, transfer_learing, _preprocess_input,
                         train, valid, labels,
                         custome_layer, optimizer, name_prefix)
+
+def plot_ROCs(image_size=None, transfer_learing=True, use_preprocess_input=False):
+
+    loop_in_combinations(plot_model_ROC, image_size, transfer_learing, use_preprocess_input)
+
+def train_multiple_networks(image_size=None, transfer_learing=True, use_preprocess_input=False):
+    '''
+    Trains list of CNNs.
+    '''
+    loop_in_combinations(train_model, image_size, transfer_learing, use_preprocess_input)
 
 
 if __name__ == '__main__':
@@ -450,5 +444,5 @@ if __name__ == '__main__':
     # train transfer learning
     train_multiple_networks(use_preprocess_input = True)
     # train from scratch
-    train_multiple_networks(
-        image_size=params.LARGE_IMG_SIZE, transfer_learing=False)
+    # train_multiple_networks(
+    #    image_size=params.LARGE_IMG_SIZE, transfer_learing=False)

@@ -3,6 +3,7 @@
 import keras.backend as K
 from keras.legacy import interfaces
 from keras.optimizers import Optimizer
+import tensorflow as tf
 
 class AdamAccumulate(Optimizer):
     '''
@@ -38,7 +39,7 @@ class AdamAccumulate(Optimizer):
 
         lr = self.lr
 
-        completed_updates = K.cast(K.tf.floordiv(self.iterations, self.accum_iters), K.floatx())
+        completed_updates = K.cast(tf.floordiv(self.iterations, self.accum_iters), K.floatx())
 
         if self.initial_decay > 0:
             lr = lr * (1. / (1. + self.decay * completed_updates))
