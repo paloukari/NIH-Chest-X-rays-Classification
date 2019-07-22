@@ -169,12 +169,22 @@ We can then use these fully trained models for inference or ensemble them togeth
 
 [Code for Ensemble Model](src/ensemble_model.ipynb)
 
+We are able to take our best performing networks and create an ensemble from the inferred predicted classes.  There are a number of different ensemble methodologies that were explored.  It is possible to perform any of the following operations:
+
+- Simple Averaging of predictions
+- Weighted Average of predictions
+- Hard Vote where values are coerced into binary then voted
+- Max Vote where the value with the highest predicted value is always selected
+
+As can be seen in the table below, we were able to improve the performance of the model with the implementation of an ensemble.  
 
 ![Ensemble Table](images/ensemble_results_table.png)
 
-![Hard Vote Ensemble](images/hard_vote_ensemble.png)
-
 ![Weighted Average Ensemble](images/weighted_ensemble_roc.png)
+
+The hard vote ensemble is interesting, because although it results in less overall accuracy, the model has an exceptionally low false negative rate.  Such an ensemble could be of use particularly in this circumstance where positive classes found with hard voting should be taken much more seriously.
+
+![Hard Vote Ensemble](images/hard_vote_ensemble.png)
 
 ## Inference on IOT Device  
 
@@ -221,7 +231,9 @@ For simplicity and performance, we utilized the mobilenet architecture.  The tra
 
 # Conclusion
 
-We were ultimately able to achieve binary classification performance of XX%.
+We were ultimately able to achieve binary classification performance of over 88% on the total dataset.  Below we compare our table of results next to the published results from 2017. As can be seen, advances in neural networks have allowed us to easily surpass the published results across all categories.
+
+![Ensemble Table](images/ensemble_results_table.png)
 
 ![Architecture Results Table](images/table%20of%20architecture%20results.png)
 
