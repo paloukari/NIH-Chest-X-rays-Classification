@@ -15,7 +15,7 @@ This UC Berkeley Master of Information in Data Science W207 final project was de
     - [Initial Results](#Initial-Results)
     - [Model Architectures](#Model-Architectures)
     - [Attention Layer](#Attention-Layer)
-    - [Train Unfrozen Model](#Train-Unfrozen-Model)
+    - [Train Final Models](#Train-Final-Models)
     - [Ensemble Model](#Ensemble-Model)
     - [Inference on IOT Device](#Inference-on-IOT-Device)
  - [Conclusion](#Conclusion)
@@ -126,11 +126,22 @@ From this model, we can see that not all diagnoses have the same levels of predi
 
 [Code for Model Architecture Determination](src/train.py)
 
-In order to 
+In order to determine which model performs best, we ran a series of experiments.  We trained a selection of models with a few dense layers at the bottom of the network to predict our binarized classes.
 
-![All Networks Validation Accuracy](images/all_model_validation_accuracy.png)
+- Mobilenet
+- Mobilenet V2
+- Inception Resnet V2
+- Inception V3
+- VGG19
+- NASNet
 
-![All Networks Validation Loss](images/all_model_validation_loss.png)
+These results as well as the final results are all displayed together on the following two tensorboard outputs. From this experimentation, we were able to determine that many of these models ultimately perform very similarly in terms of accuracy to one another when fully trained but with minor differences.  
+
+![All Models Validation Accuracy](images/all_model_validation_accuracy.png)
+
+However, as can be seen on the comparison of validation loss, some of the models do outperform.
+
+![All Models Validation Loss](images/all_model_validation_loss.png)
 
 ## Attention Layer  
 
@@ -144,9 +155,15 @@ We can see that for a given network we boosted the binary accuracy by approximat
 
 ![Attention Map Images](images/attention_map.png)
 
-## Train Unfrozen Model  
+## Train Final Models
 
 [Code for Model Architecture Determination](src/train.py)
+
+As can be seen on the comparison of validation loss, our best results should be determined with the use of VGG19, Inception V3, Mobilenet, and MobilenetV2 all with attention.
+
+![All Models Validation Loss](images/all_model_validation_loss.png)
+
+We can then use these fully trained models for inference or ensemble them together to attempt to improve performance.
 
 ## Ensemble Model  
 
