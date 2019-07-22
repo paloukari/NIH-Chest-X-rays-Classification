@@ -54,6 +54,10 @@ After the success of AlexNet at the ILSVRC in 2012, the top preforming algorithm
 
 
 ## ResNet
+![Residual Block](images/resnet_block.png)
+
+At ILSVRC 2015, Kaiming He, Xiangyu Zhang, Shaoqing Ren, and Jian Sun introduced a [Residual Neural Network (ResNet)](https://arxiv.org/abs/1512.03385). ResNet was unique due "residual blocks" (shown above), which allowed one or more layers to be skipped. During the 2015 ImageNet Large Scale Visual Recognition Competition, ResNet achieved a top-5 error rate of 3.57%. An architechture comparison of VGG and ResNet is shown below. 
+
 ![ResNet Architecture](images/resnet_arch.png)
 
 ## MobileNet 
