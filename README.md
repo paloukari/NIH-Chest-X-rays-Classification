@@ -157,7 +157,7 @@ We can see that for a given network we boosted the binary accuracy by approximat
 
 ## Train Final Models
 
-[Code for Model Architecture Determination](src/train.py)
+[Code for Final Model Training](src/train.py)
 
 As can be seen on the comparison of validation loss, our best results should be determined with the use of VGG19, Inception V3, Mobilenet, and MobilenetV2 all with attention.
 
@@ -215,6 +215,8 @@ For simplicity and performance, we utilized the mobilenet architecture.  The tra
 # Conclusion
 
 We were ultimately able to achieve binary classification performance of XX%.
+
+![Architecture Results Table](images/table%20of%20architecture%20results.png)
 
 # Installation
 
