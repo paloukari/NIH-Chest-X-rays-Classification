@@ -25,7 +25,7 @@ This UC Berkeley Master of Information in Data Science W207 final project was de
 
 # Project Overview
 
-This project aims to classify the NIH chest x-ray dataset through the use of a deep neural net architecture.  We optimize our model through incremental steps.  We first tune hyperparameters, then experiment with different architectures, and ultimately create our final mdoel. The motivation behind this project is to replicate or improve upon the results as laid out in the following paper: [ChestX-ray8: Hospital-scale Chest X-ray Database and Benchmarks on Weakly-Supervised Classification and Localization of Common Thorax Diseases](docs/Wang_ChestX-ray8_Hospital-Scale_Chest_CVPR_2017_paper.pdf).
+This project aims to classify the NIH chest x-ray dataset through the use of a deep neural net architecture.  We optimize our model through incremental steps.  We first tune hyperparameters, then experiment with different architectures, and ultimately create our final model. The motivation behind this project is to replicate or improve upon the results as laid out in the following paper: [ChestX-ray8: Hospital-scale Chest X-ray Database and Benchmarks on Weakly-Supervised Classification and Localization of Common Thorax Diseases](docs/Wang_ChestX-ray8_Hospital-Scale_Chest_CVPR_2017_paper.pdf).
 
 The workflow for this project is based on the that as laid out by Chahhou Mohammed, winner of the Kaggle $1 Million prize for price prediction on the Zillow dataset. He systematically builds a simple model and gradually adds more complexity while performing grid-search over the hyperparameters. Here we will perform this same task on the Kaggle dataset for NIH Chest X-ray images. https://github.com/MIDS-scaling-up/v2/blob/master/week07/labs/README.md
 
@@ -40,10 +40,14 @@ The figure below shows the general roadmap to create our final model.
 # Technologies
 
 ## Convolutional Neural Networks
+[Convolutional Neural Networks (CNN's)](http://deeplearning.stanford.edu/tutorial/supervised/ConvolutionalNeuralNetwork/) are special types of neural networks that are most often applied to image processing problems. What makes them unique from traditional neural networks is the convolutional layer, a layer in which neurons are connected to pixels only in their receptive fields rather than every single pixel. The result is the ability to extract features while significantly reducing dimensionality. CNN's got their start when two neurophysiologists, David Hubel and Torsten Wiesel, published pioneering research on the response of a cat's visual cortical neurons to stimuli. After many unsuccessful attempts, 
 
-
+This project utilizes three different CNN's, VGG, ResNet, and MobileNet, to process the dataset with varying results. 
 
 ### VGG
+
+
+
 ![VGG Architecture](images/vgg_arch.png)
 
 
@@ -195,9 +199,8 @@ ssh -i ~/.ssh/id_rsa {SERVER_IP}
 
 Need to Add 2 TB secondary Hard-drive to Device via softlayer device list portal.
 
-## 2. Clone the project repo
-
-If you haven't already, clone the project Git repo to your instance.  Doing so in your home directory is convenient, and this document assumes you have done so.
+## 2. Clone the project repository
+If you haven't already, clone the project Git repository to your instance.  Doing so in your home directory is convenient, and this document assumes you have done so.
 
 ```
 cd ~
@@ -215,7 +218,7 @@ chmod +x setup.sh
 ```
 
 >Note: Get your Kaggle credentials from the Kaggle account page -> **Create New API Token**.
-This is neeed to download the data.
+This is needed to download the data.
 
 ## 4. Launch an `chest_x_rays_dev` Docker container
 
