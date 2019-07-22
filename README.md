@@ -125,6 +125,34 @@ From this model, we can see that not all diagnoses have the same levels of predi
 
 ## Inference on IOT Device  
 
+After the models are fully trained on a powerful machine, in this case, a V100 on the ibmcloud, we may ultimately want to use the models on an internet of things (IOT) device.  This could be extremely useful for applications where interpretation of an X-ray is not easily possible, for instance in a 3rd world country, or a field application such as in the military.
+
+We converted the codebase and containerized the process to easily build and distribute this functionality.  This code base supports both jupyter notebook or command line inference.  For ease of use, shell scripts are used to start and end the container.  Execution of the docker commands is shown below:
+
+### Jupyter Notebook
+```
+docker run \
+--name tensorflow \
+--privileged \
+-v "$PWD":/content/project \
+-v "/media/brent/data":/content/data \
+-p 8888:8888 \
+--rm \
+-ti tensorflow_tx2 \
+jupyter notebook --no-browser --port 8888 --ip=0.0.0.0 --allow-root --NotebookApp.token='root' --notebook-dir=/content/
+```
+### Command Line
+```
+docker run \
+--name tensorflow \
+--privileged \
+-v "$PWD":/content/project \
+-v "/media/brent/data":/content/data \
+-p 8888:8888 \
+--rm \
+-ti tensorflow_tx2 \
+/bin/sh -c 'cd content/project; python3 ./inference.py'
+```
 # Conclusion
 
 We were ultimately able to achieve binary classification performance of XX%.
@@ -349,10 +377,6 @@ tensorboard --logdir=mobilenet:/src/results/tensorboard/multi/0/,resnet:/src/res
 ![Example Tensorboard Graph](images/tensorboard_graph_example.png)
 
 ![Example Multiple Comparison Tensorboard Graph](images/multi_tensorboard.png)
-
-### Testing
-
-TBD
 
 # References
 
