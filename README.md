@@ -137,11 +137,21 @@ In order to determine which model performs best, we ran a series of experiments.
 
 These results as well as the final results are all displayed together on the following two tensorboard outputs. From this experimentation, we were able to determine that many of these models ultimately perform very similarly in terms of accuracy to one another when fully trained but with minor differences.  
 
-![All Models Validation Accuracy](images/all_model_validation_accuracy.png)
+![All Models Validation Accuracy Plots](images/all_model_validation_accuracy.1.png)
+
+Note below the total training time each network required to converge. Most networks quickly reached a good accuracy and had very small improvement over the epochs
+
+
+![All Models Validation Accuracy Results](images/all_model_validation_accuracy.2.png)
 
 However, as can be seen on the comparison of validation loss, some of the models do outperform.
 
-![All Models Validation Loss](images/all_model_validation_loss.png)
+![All Models Validation Loss](images/all_model_validation_loss.1.png)
+
+Note: VGG generally outperformed the other networks in this training collection and the VGG with the attention network improved the simple VGG, increasing the training time more than threefold
+
+![All Models Validation Loss](images/all_model_validation_loss.2.png)
+
 
 ## Attention Layer  
 
@@ -153,7 +163,17 @@ We can attempt to improve our model through the use of an attention layer.  The 
 
 We can see that for a given network we boosted the binary accuracy by approximately 2% with the inclusion of the attention layer when compared with the frozen network.
 
-![Attention Map Images](images/attention_map.png)
+Here we present a few high confidence examples along with their attention maps.
+
+
+One notable example here is the fifth from the top and the very precise small attention region of the corresponding attention map.
+
+![Attention Map Images](images/attention_map.1.png)
+
+The next picture is a similar plot of random high confidence examples. We demonstrate here the importance that the the attention layer adds to the interpretability of the predictions: In the last example, although we got a very confident prediction, we see that the network actually paid attention to the top left corner, which is effectively outside the X-ray, rendering this prediction a possible false positive.
+
+
+![Attention Map Images](images/attention_map.2.png)
 
 ## Train Final Models
 
