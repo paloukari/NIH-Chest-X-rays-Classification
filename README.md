@@ -6,6 +6,7 @@ This UC Berkeley Master of Information in Data Science W207 final project was de
 # Table of Contents
 
  - [Project Overview](#Project-Overview) 
+ - [Technologies](#Technologies) 
  - [Background](#Background)
  - [Data Preparation](#Data-Preparation)
  - [Results](#Results)
@@ -24,7 +25,7 @@ This UC Berkeley Master of Information in Data Science W207 final project was de
 
 # Project Overview
 
-This project aims to classify the NIH chest x-ray dataset through the use of a deep neural net architecture.  We optimize our model through incremental steps.  We first tune hyperparameters, then experiment with different architectures, and ultimately create our final mdoel. The motivation behind this project is to replicate or improve upon the results as laid out in the following paper: [ChestX-ray8: Hospital-scale Chest X-ray Database and Benchmarks on Weakly-Supervised Classification and Localization of Common Thorax Diseases](docs/Wang_ChestX-ray8_Hospital-Scale_Chest_CVPR_2017_paper.pdf).
+This project aims to classify the NIH chest x-ray dataset through the use of a deep neural net architecture.  We optimize our model through incremental steps.  We first tune hyperparameters, then experiment with different architectures, and ultimately create our final model. The motivation behind this project is to replicate or improve upon the results as laid out in the following paper: [ChestX-ray8: Hospital-scale Chest X-ray Database and Benchmarks on Weakly-Supervised Classification and Localization of Common Thorax Diseases](docs/Wang_ChestX-ray8_Hospital-Scale_Chest_CVPR_2017_paper.pdf).
 
 The workflow for this project is based on the that as laid out by Chahhou Mohammed, winner of the Kaggle $1 Million prize for price prediction on the Zillow dataset. He systematically builds a simple model and gradually adds more complexity while performing grid-search over the hyperparameters. Here we will perform this same task on the Kaggle dataset for NIH Chest X-ray images. https://github.com/MIDS-scaling-up/v2/blob/master/week07/labs/README.md
 
@@ -36,7 +37,36 @@ The figure below shows the general roadmap to create our final model.
 
 ![Roadmap](docs/W207_Project_Roadmap.png)
 
-# Background
+# Technologies
+
+## Convolutional Neural Networks
+[Convolutional Neural Networks (CNN's)](http://deeplearning.stanford.edu/tutorial/supervised/ConvolutionalNeuralNetwork/) are special types of neural networks that are most often applied to image processing problems. What makes them unique from traditional neural networks is the convolutional layer, a layer in which neurons are connected to pixels only in their receptive fields rather than every single pixel. The result is the ability to extract features while significantly reducing dimensionality. CNN's got their start when two neurophysiologists, David Hubel and Torsten Wiesel, published pioneering research on the response of a cat's visual cortical neurons to stimuli. Soon after, researchers used some of the findings as inspiration for implementing a convolution layer to neural networks. In the 1990's Yann LeCun, Leon Bottou, Yosuha Bengio and Patrick Haffner introduced a groundbreaking algorithm called LeNet-5 for classifying handwritten digits. 
+
+![LeNet-5's Architecture](images/lenet_arch.jpg)
+
+LeNet-5 proved to be exceedingly influential to the design of CNN architectures. Many teams implemented architectures that were similar to LeNet at the begining of the century making modest gains in accuracy. In 2012, a team from the University of Toronto entered a convolutional neural network named AlexNet into the ImageNet Large Scale Visual Recognition Competition (ILSVRC) that blew the competition out of the water. Before AlexNet, the state of the art had an error rate of about 26%. AlexNet had an error rate of only 16.4%. 
+
+## VGG
+After the success of AlexNet at the ILSVRC in 2012, the top preforming algorithms were dominated by convolutional neural networks. In 2014, a team from Google submitted a CNN that reduced the error rate to under 7%. In the same year, a runner up team of Karen Simonyan, Andrew Zisserman submitted [VGG](https://arxiv.org/abs/1409.1556). In the ILSVRC, VGG19, the architecture that was used in this project, earned an error rate of 9%. Moreover, it accomplished this while boasting an extremely simple architecture of only 3x3 convolutional layers stacked on top of each other. The VGG is shown below.  
+
+![VGG Architecture](images/vgg_arch.png)
+
+
+## ResNet
+![Residual Block](images/resnet_block.png)
+
+At ILSVRC 2015, Kaiming He, Xiangyu Zhang, Shaoqing Ren, and Jian Sun introduced a [Residual Neural Network (ResNet)](https://arxiv.org/abs/1512.03385). ResNet was unique due "residual blocks" (shown above), which allowed one or more layers to be skipped. During the 2015 ImageNet Large Scale Visual Recognition Competition, ResNet achieved a top-5 error rate of 3.57%. An architecture comparison of VGG and ResNet is shown below. 
+
+![ResNet Architecture](images/resnet_arch.png)
+
+## MobileNet 
+![MobileNets](images/mobilenet.png)
+
+As CNN's gained popularity, researchers aimed to make them faster and lighter. One such CNN, MobileNet, emerged as a particularly effective architecture. MobileNet utilizes depthwise seperable convolutions to greatly reduce the number of parameters while retaining the same depth levels as "normal" CNN's. The resulting performance gains make MobileNet a great choice for computer vision on devices with less power, such as cellphones and embedded cameras. MobileNet V1's architecture is shown below. 
+
+![MobileNet architecture](images/mobilenet_arch.png)
+
+# Data Background
 
 This dataset was gathered by the NIH and contains over 100,000 anonymized chest x-ray images from more than 30,000 patients. The results shown below are taken from Wang et. al.
 
@@ -60,7 +90,7 @@ The figure below shows the distribution of findings from the diagnoses tied to t
 
 ![All Diagnoses](images/all_diagnoses.png)
 
-Further, because neural networks rely upon large training sets, we discard any rare diagnoses, that is, we eliminate those with fewer than 1000 occurences.  The resulting distribution of diagnoses is shown below.
+Further, because neural networks rely upon large training sets, we discard any rare diagnoses, that is, we eliminate those with fewer than 1000 occurrences.  The resulting distribution of diagnoses is shown below.
 
 ![Clean Categories](images/clean_categories.png)
 
@@ -68,7 +98,7 @@ Finally, in order to better understand the distribution of results, we can obser
 
 ![Adjusted Frequencies](images/adjusted_frequencies.png)
 
-Below are sample images that show different labled types of diagnoses along with their chest x-ray images.
+Below are sample images that show different labeled types of diagnoses along with their chest x-ray images.
 
 ![High Confidence Diagnoses](images/high_confidence_diagnoses.png)
 
@@ -86,7 +116,7 @@ While it appears that Adagrad, and adadelt may reach convergence faster, there i
 
 [Code for Batch Size and Learning Rate Determination](src/v2-train-simple-xray-cnn-multi-binarizer.ipynb)
 
-The table below shows batch size accumulation steps (32 x n) vs learning rate. We can see that our model achieves better loss for learning rates around 0.0005 and with a gradient accumulation step size of 8 or batch size of 256. We observed similar performance for batches both smaller and larger, so we can be confident that batch sizes of 1024, or 2048 would not yield substantially improved performance.  Going forward we can use the ADAM optimizer along with a batch size of 256 using gardient accumulation.
+The table below shows batch size accumulation steps (32 x n) vs learning rate. We can see that our model achieves better loss for learning rates around 0.0005 and with a gradient accumulation step size of 8 or batch size of 256. We observed similar performance for batches both smaller and larger, so we can be confident that batch sizes of 1024, or 2048 would not yield substantially improved performance.  Going forward we can use the ADAM optimizer along with a batch size of 256 using gradient accumulation.
 
 ![Batch Size and Learning Rate](images/gradient_accumulation_and_learning_rate.png)
 
@@ -98,11 +128,11 @@ The table below shows batch size accumulation steps (32 x n) vs learning rate. W
 
 ![Image Size Table](images/image_size_table.png)
 
-The above table shows image size resolution. Mobile net was designed for (224 x 224). VGG19 was also designed with a native resolution of (224 x 224). However, inceptionV3 resnet was designed with a resolution of (299 x 299). We might expect no improvement in performance beyond the initial design of the network. However, model performance will be dependent upon the particular data set that is being used.  We do in fact see the best perofmrance with images of size (512 x 512). While in comparison, (224 x 224) appears to over-train and result in decreasing performance with validation loss.  Intuitively, we also observe that low resolution images such as (64 x 64) have strictly worse performance.
+The above table shows image size resolution. Mobile net was designed for (224 x 224). VGG19 was also designed with a native resolution of (224 x 224). However, inceptionV3 `1111111111111111111` was designed with a resolution of (299 x 299). We might expect no improvement in performance beyond the initial design of the network. However, model performance will be dependent upon the particular data set that is being used.  We do in fact see the best performance with images of size (512 x 512). While in comparison, (224 x 224) appears to over-train and result in decreasing performance with validation loss.  Intuitively, we also observe that low resolution images such as (64 x 64) have strictly worse performance.
 
 Therefore, we will go forward with a resolution of (512 x 512), knowing with confidence that we should get results at least as good as using the native resolution of the various models (299 x 299).
 
-Initially we trained the model making use of grayscale images, as X-ray medical images can typically be inferred to not have significant information present in the color channels.  However, this is an assumption that we also test.  Kanan and Cottrell show that the information present in RGB channels and the algorithm used to produce greyscale can be meaningful.
+Initially we trained the model making use of grayscale images, as X-ray medical images can typically be inferred to not have significant information present in the color channels.  However, this is an assumption that we also test. Kanan and Cottrell show that the information present in RGB channels and the algorithm used to produce grayscale can be meaningful.
 
 ![Grey Scale and RGB from Journal](images/journal.pone.0029740.g001.png)
 
@@ -157,7 +187,7 @@ Note: VGG generally outperformed the other networks in this training collection 
 
 [Code for Attention Layer](src/v3-train-simple-xray-cnn-multi-binarizer.ipynb)
 
-We can attempt to improve our model through the use of an attention layer.  The attention layer localizes the region of the image that is strongly activating the specific classes, in this case, a particular diagnosis.  This can improve the performance of the network as well as ultimately aid in the interpretability of our model by visualizing the attention layer as shown below in the following figures.
+We can attempt to improve our model through the use of an attention layer.  The attention layer localizes the region of the image that is strongly activating the specific classes, in this case, a particular diagnosis.  This can improve the performance of the network as well as ultimately aid in the interoperability of our model by visualizing the attention layer as shown below in the following figures.
 
 ![Attention Improvement](images/attention_improvement.png)
 
@@ -307,9 +337,8 @@ ssh -i ~/.ssh/id_rsa {SERVER_IP}
 
 Need to Add 2 TB secondary Hard-drive to Device via softlayer device list portal.
 
-## 2. Clone the project repo
-
-If you haven't already, clone the project Git repo to your instance.  Doing so in your home directory is convenient, and this document assumes you have done so.
+## 2. Clone the project repository
+If you haven't already, clone the project Git repository to your instance.  Doing so in your home directory is convenient, and this document assumes you have done so.
 
 ```
 cd ~
@@ -327,7 +356,7 @@ chmod +x setup.sh
 ```
 
 >Note: Get your Kaggle credentials from the Kaggle account page -> **Create New API Token**.
-This is neeed to download the data.
+This is needed to download the data.
 
 ## 4. Launch an `chest_x_rays_dev` Docker container
 
